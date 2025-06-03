@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Driver;
 
+use Hyperf\AsyncQueue\Driver\DriverInterface as QueueDriverInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 use Psr\Container\ContainerInterface;
@@ -11,7 +12,7 @@ use Hyperf\Codec\Packer\PhpSerializerPacker;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Redis\Redis;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Filesystem\Filesystem;
+use League\Flysystem\Filesystem;
 use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\Config\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Config\ImportConfig;
@@ -21,7 +22,10 @@ use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
+use Vartruexuan\HyperfExcel\Job\ExportJob;
 use function Hyperf\Support\make;
+use Hyperf\Filesystem\FilesystemFactory;
+use Hyperf\Contract\PackerInterface;
 
 abstract class Driver implements DriverInterface
 {
@@ -30,7 +34,7 @@ abstract class Driver implements DriverInterface
     public EventDispatcherInterface $event;
     public Redis $redis;
     public Filesystem $filesystem;
-    public DriverFactory $queue;
+    public QueueDriverInterface $queue;
     protected PackerInterface $packer;
 
     public function __construct(protected ContainerInterface $container, protected array $config)
@@ -46,6 +50,12 @@ abstract class Driver implements DriverInterface
     public function export(ExportConfig $config)
     {
         try{
+            $this->formatConfig($config);
+
+            if(true){
+               return $this->pushQueue(new ExportJob(['config' => $config]));
+            }
+
             $this->event->dispatch(make(BeforeExport::class, [
                 'config' => $config,
             ]));

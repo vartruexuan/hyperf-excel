@@ -34,4 +34,23 @@ class BaseJob extends Job
         $this->driver = $this->container->get(DriverFactory::class)->get($this->driverName);
     }
 
+
+    public function fail(Throwable $e): void
+    {
+
+    }
+
+
+    public function setMaxAttempts(int $maxAttempts): static
+    {
+        
+    }
+
+    public function getMaxAttempts(): int
+    {
+
+
+    }
+
+
 }

@@ -6,7 +6,6 @@ namespace Vartruexuan\HyperfExcel\Driver;
 
 use Vartruexuan\HyperfExcel\Exception\InvalidDriverException;
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Contract\PackerInterface;
 use Psr\Container\ContainerInterface;
 
 use function Hyperf\Support\make;
