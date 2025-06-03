@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use Vartruexuan\HyperfExcel\Job\ExportJob;
+
 return [
-    // 驱动：xlswriter
     'default' => [
-        'driver' => '',
+        'driver' => \Vartruexuan\HyperfExcel\Driver\XlsWriterDriver::class,
         // redis 配置
         'redis' => [
             'pool' => 'default',
@@ -13,6 +14,10 @@ return [
         // queue配置
         'queue' => [
             'name' => 'default',
+            'jobs' => [
+                'export' => \Vartruexuan\HyperfExcel\Job\ExportJob::class,
+                'import' => \Vartruexuan\HyperfExcel\Job\ImportJob::class,
+            ],
         ],
         // filesystem 配置
         'filesystem' => [
