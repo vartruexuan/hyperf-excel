@@ -26,5 +26,5 @@ abstract class BaseConfig
      * @var string
      */
     public string $token = '';
-    
+
 }

@@ -6,6 +6,7 @@ namespace Vartruexuan\HyperfExcel\Driver;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+use Psr\Container\ContainerInterface;
 use Hyperf\Codec\Packer\PhpSerializerPacker;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Redis\Redis;
