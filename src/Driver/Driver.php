@@ -6,20 +6,31 @@ namespace Vartruexuan\HyperfExcel\Driver;
 
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+use Hyperf\Codec\Packer\PhpSerializerPacker;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Redis\Redis;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Filesystem\Filesystem;
+use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
+use Vartruexuan\HyperfExcel\Data\Config\ExportConfig;
+use Vartruexuan\HyperfExcel\Data\Config\ImportConfig;
+use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\Error;
+use Vartruexuan\HyperfExcel\Exception\ExcelException;
+use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
+use function Hyperf\Support\make;
 
 abstract class Driver implements DriverInterface
 {
-
     public string $name = 'default';
+
     public EventDispatcherInterface $event;
     public Redis $redis;
     public Filesystem $filesystem;
     public DriverFactory $queue;
+    protected PackerInterface $packer;
 
     public function __construct(protected ContainerInterface $container, protected array $config)
     {
@@ -27,33 +38,77 @@ abstract class Driver implements DriverInterface
         $this->redis = $this->container->get(RedisFactory::class)->get($config['redis']['pool'] ?? 'default');
         $this->queue = $this->container->get(DriverFactory::class)->get($config['queue']['name'] ?? 'default');
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($config['filesystem']['storage'] ?? 'local');
+
+        $this->packer = $container->get($config['packer'] ?? PhpSerializerPacker::class);
     }
 
-    public function export($config)
+    public function export(ExportConfig $config)
+    {
+        try{
+            $this->event->dispatch(make(BeforeExport::class, [
+                'config' => $config,
+            ]));
+
+            // 导出
+            $this->exportExcel($config);
+
+
+            $this->event->dispatch(make(AfterExport::class, [
+                'config' => $config,
+            ]));
+
+
+        }catch (ExcelException $exception){
+            $this->event->dispatch(make(Error::class, [
+                'config' => $config,
+                'exception' => $exception,
+            ]));
+            throw $exception;
+        }catch (\Throwable $throwable){
+            $this->event->dispatch(make(Error::class, [
+                'config' => $config,
+                'exception' => $throwable,
+            ]));
+            throw $throwable;
+        }
+    }
+
+    public function import(ImportConfig $config)
     {
 
     }
 
-    public function import($config)
+
+
+    public function formatConfig(BaseConfig $config)
     {
 
     }
-
 
     /**
      * 推送队列
      *
      * @param BaseJob $job
-     * @return void
+     * @return bool
      */
-    public function pushQueue(BaseJob $job)
+    public function pushQueue(BaseJob $job): bool
     {
         $job->driverName = $this->name; // 设置名
         return $this->queue->push($job);
     }
 
+    /**
+     * 构建token
+     *
+     * @return string
+     * @throws \yii\base\Exception
+     */
+    protected function buildToken()
+    {
+        return make(Helper::class)->uuid4();
+    }
 
-    abstract function exportExcel($config): string;
+    abstract function exportExcel(ExportConfig $config): string;
 
-    abstract function importExcel($config);
+    abstract function importExcel(ImportConfig $config);
 }

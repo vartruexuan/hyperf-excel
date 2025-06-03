@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use Vartruexuan\HyperfExcel\Job\ExportJob;
-
 return [
     'default' => [
         'driver' => \Vartruexuan\HyperfExcel\Driver\XlsWriterDriver::class,

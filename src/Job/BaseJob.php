@@ -6,6 +6,7 @@ namespace Vartruexuan\HyperfExcel\Job;
 
 use Psr\Container\ContainerInterface;
 use Hyperf\AsyncQueue\Job;
+use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 
@@ -25,7 +26,7 @@ class BaseJob extends Job
      */
     public DriverInterface $driver;
 
-    public $config;
+    public BaseConfig $config;
 
     public function __construct(ContainerInterface $container, $params)
     {
