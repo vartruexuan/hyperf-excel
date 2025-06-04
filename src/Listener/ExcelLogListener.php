@@ -104,7 +104,12 @@ class ExcelLogListener extends BaseListener
 
     public function error(object $event)
     {
-
+        $this->logger->error( sprintf(
+            'config:%s,token:%s, error:%s',
+            get_class($event->config),
+            $event->config->getToken(),
+            $event->exception->getMessage() .  $event->exception->getTraceAsString(),
+        ));
     }
 
 }

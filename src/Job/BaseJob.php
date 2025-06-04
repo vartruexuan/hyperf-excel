@@ -10,6 +10,7 @@ use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Hyperf\Context\ApplicationContext;
+use Vartruexuan\HyperfExcel\Event\Error;
 
 abstract class BaseJob extends Job
 {
@@ -38,10 +39,12 @@ abstract class BaseJob extends Job
         return $this->getContainer()->get(DriverFactory::class)->get($this->driverName);
     }
 
-    abstract function handle();
-
     public function fail(\Throwable $e): void
     {
-        $this->getDriver()->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
+        $driver = $this->getDriver();
+        $driver->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
+        $driver->event->dispatch(make(Error::class, ['config' => $this->config, 'driver' => $driver, 'exception' => $e]));
     }
+
+    abstract function handle();
 }
