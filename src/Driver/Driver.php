@@ -246,7 +246,7 @@ abstract class Driver implements DriverInterface
      */
     protected function buildToken()
     {
-        return make(Helper::class)->uuid4();
+        return Helper::uuid4();
     }
 
     /**

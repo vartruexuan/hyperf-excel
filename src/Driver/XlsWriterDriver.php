@@ -23,7 +23,7 @@ class XlsWriterDriver extends Driver
     {
         parent::__construct($container, $config);
         $this->excel = new Excel([
-            'path' => make(Helper::class)->getTempDir(),
+            'path' => Helper::getTempDir(),
         ]);
     }
 
@@ -39,7 +39,7 @@ class XlsWriterDriver extends Driver
             'config' => $config,
             'driver' => $this,
         ];
-        $filePath = make(Helper::class)->getTempFileName('ex_');
+        $filePath = Helper::getTempFileName('ex_');
         $fileName = basename($filePath);
         $this->excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
 

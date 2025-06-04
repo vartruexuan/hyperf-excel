@@ -15,7 +15,7 @@ class Helper
      *
      * @return void
      */
-    public function uuid4()
+    public static function uuid4()
     {
         return Uuid::uuid4()->getHex()->toString();
     }
@@ -27,7 +27,7 @@ class Helper
      * @param string $filePath
      * @return string|false
      */
-    public function downloadFile(string $remotePath, string $filePath)
+    public static function downloadFile(string $remotePath, string $filePath)
     {
         $response = Client::create([
             'response_type' => 'raw',
@@ -47,7 +47,7 @@ class Helper
      *
      * @return string
      */
-    public function getTempDir(): string
+    public static function getTempDir(): string
     {
         return sys_get_temp_dir();
     }
@@ -58,9 +58,9 @@ class Helper
      * @param $prefix
      * @return false|string
      */
-    public function getTempFileName($prefix = 'ex_')
+    public static function getTempFileName($prefix = 'ex_')
     {
-        return tempnam($this->getTempDir(), $prefix);
+        return tempnam(static::getTempDir(), $prefix);
     }
 
     /**
