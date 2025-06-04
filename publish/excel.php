@@ -9,6 +9,10 @@ return [
         'redis' => [
             'pool' => 'default',
         ],
+        // filesystem 配置
+        'filesystem' => [
+            'storage' => 'local', // 默认本地
+        ],
         // queue配置
         'queue' => [
             'name' => 'default',
@@ -17,12 +21,14 @@ return [
                 'import' => \Vartruexuan\HyperfExcel\Job\ImportJob::class,
             ],
         ],
-        // filesystem 配置
-        'filesystem' => [
-            'storage' => 'local', // 默认本地
-        ],
         'logger' => [
             'name' => 'hyperf-excel',
-        ]
+        ],
+        'export' => [
+            'rootDir' => 'export',
+            // 导出文件地址构建策略
+            'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeStrategy::class,
+        ],
     ]
+
 ];

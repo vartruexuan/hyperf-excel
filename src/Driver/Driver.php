@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Driver;
 
+use _PHPStan_bc6352b8e\Psr\Http\Message\ResponseInterface;
 use Hyperf\AsyncQueue\Driver\DriverInterface as QueueDriverInterface;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Container\ContainerInterface;
 use Hyperf\Codec\Packer\PhpSerializerPacker;
@@ -16,6 +19,7 @@ use Psr\Log\LoggerInterface;
 use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\Config\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Config\ImportConfig;
+use Vartruexuan\HyperfExcel\Data\ExportData;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\Error;
@@ -50,27 +54,34 @@ abstract class Driver implements DriverInterface
         $this->packer = $container->get($config['packer'] ?? PhpSerializerPacker::class);
     }
 
-    public function export(ExportConfig $config)
+    public function export(ExportConfig $config): ExportData
     {
         try {
             $this->formatConfig($config);
-
+            /**
+             * @var ExportData $exportData
+             */
+            $exportData = make(ExportData::class, ['config' => $config]);
             $eventParam = [
                 'config' => $config,
                 'driver' => $this
             ];
             if ($config->getIsAsync()) {
-                return $this->pushQueue(new ExportJob($this->name, $config));
+                if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
+                    throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
+                }
+                $this->pushQueue(new $this->config['queue']['jobs']['export']($this->name, $config));
+                return $exportData;
             }
-
             $this->event->dispatch(make(BeforeExport::class, $eventParam));
 
-            // 导出
-            $this->exportExcel($config);
+            $path = $this->exportExcel($config);
+
+            $exportData->response = $this->exportOutPut($config, $path);
 
             $this->event->dispatch(make(AfterExport::class, $eventParam));
-            return ['ok'];
 
+            return $exportData;
         } catch (ExcelException $exception) {
             $this->event->dispatch(make(Error::class, [
                 'config' => $config,
@@ -84,6 +95,7 @@ abstract class Driver implements DriverInterface
                 'driver' => $this,
                 'exception' => $throwable,
             ]));
+            $this->logger->error('export error:' . $throwable->getMessage(), ['exception' => $throwable]);
             throw $throwable;
         }
     }
@@ -91,6 +103,38 @@ abstract class Driver implements DriverInterface
     public function import(ImportConfig $config)
     {
 
+    }
+
+
+    /**
+     * 导出文件输出
+     *
+     * @param ExportConfig $config
+     * @param string $filePath
+     * @return string|Psr\Http\Message\ResponseInterface
+     * @throws ExcelException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    protected function exportOutPut(ExportConfig $config, string $filePath):string|\Psr\Http\Message\ResponseInterface
+    {
+        $path = $this->buildExportPath($config);
+        $fileName = basename($path);
+        switch ($config->outPutType) {
+            // 上传
+            case ExportConfig::OUT_PUT_TYPE_UPLOAD:
+                $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                if (!$this->filesystem->fileExists($path)) {
+                    throw new ExcelException('File upload failed');
+                }
+                return $path;
+            // 直接输出
+            case ExportConfig::OUT_PUT_TYPE_OUT:
+                $response = $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class);
+                return $response->download($filePath,$fileName);
+            default:
+                throw new ExcelException('outPutType error');
+        }
     }
 
 
@@ -129,6 +173,17 @@ abstract class Driver implements DriverInterface
     protected function buildToken()
     {
         return make(Helper::class)->uuid4();
+    }
+
+    /**
+     * 构建导出地址
+     *
+     * @param ExportConfig $config
+     * @return string
+     */
+    protected function buildExportPath(ExportConfig $config)
+    {
+        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . make($this->config['export']['pathStrategy'], ['config' => $config])->getPath($config);
     }
 
     abstract function exportExcel(ExportConfig $config): string;

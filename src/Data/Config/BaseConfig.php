@@ -13,21 +13,6 @@ abstract class BaseConfig
      */
     public string $serviceName = 'default';
 
-    public function __construct(array $config = [])
-    {
-        // 初始化
-        $this->initConfig($config);
-    }
-
-    protected function initConfig(array $config = [])
-    {
-        foreach ($config as $name => $value) {
-            if(property_exists($this, $name)){
-                $this->{$name} = $value;
-            }
-        }
-    }
-
     /**
      * 是否异步
      *
@@ -42,6 +27,11 @@ abstract class BaseConfig
      */
     public string $token = '';
 
+    public function __construct(array $config = [])
+    {
+        // 初始化
+        $this->initConfig($config);
+    }
 
     public function setToken(string $token): static
     {
@@ -62,5 +52,14 @@ abstract class BaseConfig
     public function getIsAsync(): bool
     {
         return  $this->isAsync;
+    }
+
+    protected function initConfig(array $config = [])
+    {
+        foreach ($config as $name => $value) {
+            if(property_exists($this, $name)){
+                $this->{$name} = $value;
+            }
+        }
     }
 }

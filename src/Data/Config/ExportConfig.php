@@ -7,7 +7,6 @@ namespace Vartruexuan\HyperfExcel\Data\Config;
 class ExportConfig extends BaseConfig
 {
     public const OUT_PUT_TYPE_UPLOAD = 'upload'; // 上传第三方
-    public const OUT_PUT_TYPE_LOCAL = 'local'; // 保存到本地
     public const OUT_PUT_TYPE_OUT = 'out'; // 直接输出
 
     /**
@@ -17,20 +16,19 @@ class ExportConfig extends BaseConfig
      */
     public string $outPutType = self::OUT_PUT_TYPE_OUT;
 
-    public string $path='';
     public array $params = [];
 
+    public function getServiceName(): string
+    {
+        return $this->serviceName;
+    }
 
-    public function getOutPutType():string
+    public function getOutPutType(): string
     {
         return $this->outPutType;
     }
-    public function getPath():string
-    {
-        return $this->path;
-    }
 
-    public function getParams():array
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -38,8 +36,8 @@ class ExportConfig extends BaseConfig
     public function __serialize(): array
     {
         return [
+            'serviceName' => $this->getServiceName(),
             'token' => $this->getToken(),
-            'path' => $this->getPath(),
             'isAsync' => $this->getIsAsync(),
             'outPutType' => $this->getOutPutType(),
             'params' => $this->getParams(),
