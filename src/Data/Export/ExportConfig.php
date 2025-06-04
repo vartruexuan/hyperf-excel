@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Vartruexuan\HyperfExcel\Data\Config;
+namespace Vartruexuan\HyperfExcel\Data\Export;
+
+use Vartruexuan\HyperfExcel\Data\BaseConfig;
 
 class ExportConfig extends BaseConfig
 {
@@ -18,6 +20,12 @@ class ExportConfig extends BaseConfig
 
     public array $params = [];
 
+    /**
+     * @var Sheet[]
+     */
+    public array $sheets = [];
+
+
     public function getServiceName(): string
     {
         return $this->serviceName;
@@ -32,6 +40,30 @@ class ExportConfig extends BaseConfig
     {
         return $this->params;
     }
+
+
+    /**
+     * 获取页码配置
+     *
+     * @return Sheet[]
+     */
+    public function getSheets()
+    {
+        return $this->sheets;
+    }
+
+    /**
+     * 设置页
+     *
+     * @param $sheets
+     * @return $this
+     */
+    public function setSheets($sheets): static
+    {
+        $this->sheets = $sheets;
+        return $this;
+    }
+
 
     public function __serialize(): array
     {

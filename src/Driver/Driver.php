@@ -4,33 +4,38 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Driver;
 
-use _PHPStan_bc6352b8e\Psr\Http\Message\ResponseInterface;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Driver\DriverInterface as QueueDriverInterface;
+use Hyperf\Codec\Packer\PhpSerializerPacker;
+use Hyperf\Contract\PackerInterface;
+use Hyperf\Filesystem\FilesystemFactory;
+use Hyperf\Logger\LoggerFactory;
+use Hyperf\Redis\Redis;
+use Hyperf\Redis\RedisFactory;
+use League\Flysystem\Filesystem;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Container\ContainerInterface;
-use Hyperf\Codec\Packer\PhpSerializerPacker;
-use Hyperf\Redis\RedisFactory;
-use Hyperf\Redis\Redis;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use League\Flysystem\Filesystem;
 use Psr\Log\LoggerInterface;
-use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
-use Vartruexuan\HyperfExcel\Data\Config\ExportConfig;
-use Vartruexuan\HyperfExcel\Data\Config\ImportConfig;
-use Vartruexuan\HyperfExcel\Data\ExportData;
+use Vartruexuan\HyperfExcel\Data\BaseConfig;
+use Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam;
+use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
+use Vartruexuan\HyperfExcel\Data\Export\ExportData;
+use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\AfterExportData;
+use Vartruexuan\HyperfExcel\Event\AfterImportData;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeExportData;
+use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
-use Vartruexuan\HyperfExcel\Job\ExportJob;
 use function Hyperf\Support\make;
-use Hyperf\Filesystem\FilesystemFactory;
-use Hyperf\Contract\PackerInterface;
-use Hyperf\Logger\LoggerFactory;
+
+use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 
 abstract class Driver implements DriverInterface
 {
@@ -107,6 +112,75 @@ abstract class Driver implements DriverInterface
 
 
     /**
+     * 导入行回调
+     *
+     * @param callable $callback
+     * @param ImportConfig $config
+     * @param ImportSheet $sheet
+     * @param array $row
+     *
+     * @return mixed|null
+     */
+    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row)
+    {
+        $importRowCallbackParam = new ImportRowCallbackParam([
+            'excel' => $this,
+            'sheet' => $sheet,
+            'importConfig' => $config,
+            'row' => $row,
+        ]);
+        $eventParam = [
+            'config' => $config,
+            'driver' => $this,
+        ];
+        $this->event->dispatch(make(BeforeImportData::class, $eventParam));
+
+        $result = call_user_func($callback, $importRowCallbackParam);
+
+        $this->event->dispatch(make(AfterImportData::class, $eventParam));
+
+        return $result ?? null;
+    }
+
+
+    /**
+     * 导出数据回调
+     *
+     * @param callable $callback 回调
+     * @param ExportConfig $config
+     * @param ExportSheet $sheet
+     * @param int $page 页码
+     * @param int $pageSize 限制每页数量
+     * @param int|null $totalCount
+     * @return mixed
+     */
+    protected function exportDataCallback(callable $callback, ExportConfig $config, ExportSheet $sheet, int $page, int $pageSize, ?int $totalCount)
+    {
+        $exportCallbackParam = new ExportCallbackParam([
+            'driver' => $this,
+            'exportConfig' => $config,
+            'sheet' => $sheet,
+
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'totalCount' => $totalCount,
+        ]);
+
+        $eventParam = [
+            'config' => $config,
+            'driver' => $this,
+        ] ;
+
+        $this->event->dispatch(make(BeforeExportData::class, $eventParam));
+
+        $result = call_user_func($callback, $exportCallbackParam);
+
+        $this->event->dispatch(make(AfterExportData::class, $eventParam));
+
+        return $result;
+    }
+
+    /**
      * 导出文件输出
      *
      * @param ExportConfig $config
@@ -116,7 +190,7 @@ abstract class Driver implements DriverInterface
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    protected function exportOutPut(ExportConfig $config, string $filePath):string|\Psr\Http\Message\ResponseInterface
+    protected function exportOutPut(ExportConfig $config, string $filePath): string|\Psr\Http\Message\ResponseInterface
     {
         $path = $this->buildExportPath($config);
         $fileName = basename($path);
@@ -131,7 +205,7 @@ abstract class Driver implements DriverInterface
             // 直接输出
             case ExportConfig::OUT_PUT_TYPE_OUT:
                 $response = $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class);
-                return $response->download($filePath,$fileName);
+                return $response->download($filePath, $fileName);
             default:
                 throw new ExcelException('outPutType error');
         }

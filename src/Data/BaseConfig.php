@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Vartruexuan\HyperfExcel\Data\Config;
+namespace Vartruexuan\HyperfExcel\Data;
 
-abstract class BaseConfig
+abstract class BaseConfig extends BaseObject
 {
     /**
      * 服务名
@@ -27,11 +27,6 @@ abstract class BaseConfig
      */
     public string $token = '';
 
-    public function __construct(array $config = [])
-    {
-        // 初始化
-        $this->initConfig($config);
-    }
 
     public function setToken(string $token): static
     {
@@ -52,14 +47,5 @@ abstract class BaseConfig
     public function getIsAsync(): bool
     {
         return  $this->isAsync;
-    }
-
-    protected function initConfig(array $config = [])
-    {
-        foreach ($config as $name => $value) {
-            if(property_exists($this, $name)){
-                $this->{$name} = $value;
-            }
-        }
     }
 }

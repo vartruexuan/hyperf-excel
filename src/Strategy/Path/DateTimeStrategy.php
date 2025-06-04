@@ -2,7 +2,7 @@
 
 namespace Vartruexuan\HyperfExcel\Strategy\Path;
 
-use Vartruexuan\HyperfExcel\Data\Config\ExportConfig;
+use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 
 class DateTimeStrategy implements StrategyInterface
 {

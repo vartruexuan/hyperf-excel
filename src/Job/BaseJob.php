@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Job;
 
-use Psr\Container\ContainerInterface;
 use Hyperf\AsyncQueue\Job;
-use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
+use Hyperf\Context\ApplicationContext;
+use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
-use Hyperf\Context\ApplicationContext;
 use Vartruexuan\HyperfExcel\Event\Error;
 
 abstract class BaseJob extends Job
