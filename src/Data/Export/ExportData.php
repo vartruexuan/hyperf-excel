@@ -11,7 +11,7 @@ class ExportData extends BaseObject
 {
     public ResponseInterface|string $response;
 
-    public ExportConfig $exportConfig;
+    public ExportConfig $config;
 
     /**
      * @return ResponseInterface|string

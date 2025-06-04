@@ -68,7 +68,8 @@ abstract class Driver implements DriverInterface
             /**
              * @var ExportData $exportData
              */
-            $exportData = make(ExportData::class, ['config' => $config]);
+            $exportData = new ExportData(['config' => $config]);
+
             $eventParam = [
                 'config' => $config,
                 'driver' => $this
@@ -80,7 +81,9 @@ abstract class Driver implements DriverInterface
                 $this->pushQueue(new $this->config['queue']['jobs']['export']($this->name, $config));
                 return $exportData;
             }
+
             $this->event->dispatch(make(BeforeExport::class, $eventParam));
+
 
             $path = $this->exportExcel($config);
 
