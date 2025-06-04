@@ -20,6 +20,9 @@ return [
         // filesystem 配置
         'filesystem' => [
             'storage' => 'local', // 默认本地
+        ],
+        'logger' => [
+            'name' => 'hyperf-excel',
         ]
     ]
 ];

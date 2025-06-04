@@ -7,10 +7,11 @@ namespace Vartruexuan\HyperfExcel\Job;
 use Psr\Container\ContainerInterface;
 use Hyperf\AsyncQueue\Job;
 use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
+use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
-use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+use Hyperf\Context\ApplicationContext;
 
-class BaseJob extends Job
+abstract class BaseJob extends Job
 {
     /**
      * 驱动名
@@ -18,39 +19,29 @@ class BaseJob extends Job
      * @var string
      */
     public string $driverName = 'default';
-
-    /**
-     * 当前驱动
-     *
-     * @var DriverInterface
-     */
-    public DriverInterface $driver;
-
     public BaseConfig $config;
+    protected int $maxAttempts = 0;
 
-    public function __construct(ContainerInterface $container, $params)
+    public function __construct(string $driverName, BaseConfig $config)
     {
-        $this->container = $container;
-        $this->driver = $this->container->get(DriverFactory::class)->get($this->driverName);
+        $this->driverName = $driverName;
+        $this->config = $config;
     }
 
-
-    public function fail(Throwable $e): void
+    protected function getContainer(): ContainerInterface
     {
-
+        return ApplicationContext::getContainer();
     }
 
-
-    public function setMaxAttempts(int $maxAttempts): static
+    protected function getDriver(): Driver
     {
-        
+        return $this->getContainer()->get(DriverFactory::class)->get($this->driverName);
     }
 
-    public function getMaxAttempts(): int
+    abstract function handle();
+
+    public function fail(\Throwable $e): void
     {
-
-
+        $this->getDriver()->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
     }
-
-
 }

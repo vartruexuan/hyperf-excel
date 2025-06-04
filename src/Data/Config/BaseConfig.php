@@ -27,4 +27,25 @@ abstract class BaseConfig
      */
     public string $token = '';
 
+
+    public function setToken(string $token): static
+    {
+        $this->token = $token;
+        return $this;
+    }
+
+    public function getToken(): string
+    {
+        return  $this->token;
+    }
+
+    public function setAsync(bool $isAsync): static
+    {
+        $this->isAsync = $isAsync;
+        return $this;
+    }
+    public function getIsAsync(): bool
+    {
+        return  $this->isAsync;
+    }
 }

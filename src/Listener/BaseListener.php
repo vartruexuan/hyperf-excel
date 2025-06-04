@@ -39,7 +39,6 @@ abstract class BaseListener implements ListenerInterface
 
     public function __construct(ContainerInterface $container)
     {
-        $this->logger = $container->get(LoggerFactory::class)->get('excel');
     }
 
     public function listen(): array
@@ -73,16 +72,11 @@ abstract class BaseListener implements ListenerInterface
         ];
     }
 
-    public function process(object $event)
+    public function process(object $event): void
     {
         $className = lcfirst(basename(str_replace('\\', '/', get_class($event))));
+        $this->logger = $event->driver->logger;
         $this->{$className}($event);
-    }
-
-
-    public function log()
-    {
-
     }
 
     abstract function afterExport(object $event);

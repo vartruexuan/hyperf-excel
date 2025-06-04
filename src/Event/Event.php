@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Event;
 
 use Vartruexuan\HyperfExcel\Data\Config\BaseConfig;
+use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class Event
 {
-    public function __construct(BaseConfig $config)
+    public function __construct(public BaseConfig $config, public Driver $driver)
     {
     }
 }
