@@ -23,6 +23,7 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
+use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
@@ -34,6 +35,7 @@ use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
 use function Hyperf\Support\make;
+use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 

@@ -64,6 +64,18 @@ class Helper
     }
 
     /**
+     * 获取文件mime类型
+     *
+     * @param $filePath
+     * @return false|string
+     */
+    public function getMimeType($filePath)
+    {
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        return $finfo->file($filePath);
+    }
+
+    /**
      * 删除文件
      *
      * @param string $filePath
