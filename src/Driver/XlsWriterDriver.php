@@ -139,7 +139,8 @@ class XlsWriterDriver extends Driver
                 };
             }
 
-            $list = $this->exportDataCallback($dataCallback, $config, $sheet, $page, $pageSize, $totalCount);
+
+            $list = $this->exportDataCallback($dataCallback, $config, $sheet, $page, min($totalCount, $pageSize), $totalCount);
 
             $listCount = count($list ?? []);
 
@@ -147,7 +148,7 @@ class XlsWriterDriver extends Driver
                 $this->excel->data($sheet->formatList($list));
             }
 
-            $isEnd = !$isCallback || $totalCount <= 0 || ($listCount < $pageSize || $pageNum <= $page);
+            $isEnd = !$isCallback || $totalCount <= 0 || $totalCount <= $pageSize || ($listCount < $pageSize || $pageNum <= $page);
 
             $page++;
         } while (!$isEnd);

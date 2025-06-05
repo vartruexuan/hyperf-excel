@@ -80,7 +80,7 @@ class Helper
      * @param $filePath
      * @return false|string
      */
-    public function getMimeType($filePath)
+    public static function getMimeType($filePath)
     {
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         return $finfo->file($filePath);
@@ -92,7 +92,7 @@ class Helper
      * @param string $filePath
      * @return bool
      */
-    public function deleteFile(string $filePath)
+    public static function deleteFile(string $filePath)
     {
         return @unlink($filePath);
     }
