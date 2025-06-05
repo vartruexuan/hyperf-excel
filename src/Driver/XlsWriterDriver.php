@@ -21,7 +21,6 @@ use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vtiful\Kernel\Excel;
-use function Hyperf\Support\make;
 
 class XlsWriterDriver extends Driver
 {
@@ -36,48 +35,39 @@ class XlsWriterDriver extends Driver
     }
 
     /**
-     * 导出
+     * export
      *
      * @param ExportConfig $config
      * @return string
      */
     public function exportExcel(ExportConfig $config): string
     {
-        $eventParam = [
-            'config' => $config,
-            'driver' => $this,
-        ];
         $filePath = Helper::getTempFileName('ex_');
         $fileName = basename($filePath);
         $this->excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
 
-        //todo 触发事件before
-        $this->event->dispatch(make(BeforeExportExcel::class, $eventParam));
+        $this->event->dispatch(new BeforeExportExcel($config, $this));
 
-        /**
-         * 写入页码数据
-         *
-         * @var  $sheet
-         */
         foreach (array_values($config->getSheets()) as $index => $sheet) {
             $this->exportSheet($sheet, $config, $index);
         }
 
         $this->excel->output();
 
-        $this->event->dispatch(make(AfterExportExcel::class, $eventParam));
+        $this->event->dispatch(new AfterExportExcel($config, $this));
 
         return $filePath;
     }
 
+    /**
+     * import
+     *
+     * @param ImportConfig $config
+     * @return ImportData
+     * @throws ExcelException
+     */
     public function importExcel(ImportConfig $config): ImportData
     {
-        $token = $config->getToken();
-
-        $eventParam = [
-            'config' => $config,
-            'driver' => $this,
-        ];
         $importData = new ImportData([
             'config' => $config,
         ]);
@@ -102,7 +92,7 @@ class XlsWriterDriver extends Driver
             return $sheet;
         }, array_values($config->getSheets()));
 
-        $this->event->dispatch(make(BeforeImportExcel::class, $eventParam));
+        $this->event->dispatch(new BeforeImportExcel($config, $this));
 
         /**
          * 页配置
@@ -113,30 +103,21 @@ class XlsWriterDriver extends Driver
             $this->importSheet($sheet, $config, $importData);
         }
 
-        // 删除临时文件
-        @$this->deleteFile($filePath);
         $this->excel->close();
 
-        $this->event->dispatch(make(AfterImportExcel::class, $eventParam));
-
+        $this->event->dispatch(new AfterImportExcel($config, $this));
         return $importData;
     }
 
 
     protected function exportSheet(ExportSheet $sheet, ExportConfig $config, int|string $index)
     {
-
         if ($index > 0) {
             $this->excel->addSheet($sheet->getName());
         }
-        $eventParam = [
-            'config' => $config,
-            'driver' => $this,
-        ];
 
-        $this->event->dispatch(make(BeforeExportSheet::class, $eventParam));
+        $this->event->dispatch(new BeforeExportSheet($config, $this));
 
-        // header
         $this->excel->header($sheet->getHeaders());
 
         $totalCount = $sheet->getCount();
@@ -148,7 +129,6 @@ class XlsWriterDriver extends Driver
         $page = 1;
         $pageNum = ceil($totalCount / $pageSize);
 
-        // 导出数据
         do {
             $list = $dataCallback = $data;
 
@@ -172,7 +152,7 @@ class XlsWriterDriver extends Driver
             $page++;
         } while (!$isEnd);
 
-        $this->event->dispatch(make(AfterExportSheet::class, $eventParam));
+        $this->event->dispatch(new AfterExportSheet($config, $this));
     }
 
 
@@ -180,22 +160,15 @@ class XlsWriterDriver extends Driver
      * 导出页码
      *
      * @param ImportSheet $sheet
-     * @param ImportConfig $importConfig
+     * @param ImportConfig $config
      * @param ImportData $importData
      * @return void
      */
-    protected function importSheet(ImportSheet $sheet, ImportConfig $importConfig, ImportData &$importData)
+    protected function importSheet(ImportSheet $sheet, ImportConfig $config, ImportData &$importData)
     {
-        $token = $importConfig->getToken();
-
-        $eventParam = [
-            'config' => $importConfig,
-            'driver' => $this,
-        ];
-
         $sheetName = $sheet->name;
 
-        $this->event->dispatch(make(BeforeImportSheet::class, $eventParam));
+        $this->event->dispatch(new BeforeImportSheet($config, $this));
 
         $this->excel->openSheet($sheetName);
 
@@ -215,20 +188,19 @@ class XlsWriterDriver extends Driver
                 // 返回全量数据
                 $sheetData = $this->excel->getSheetData();
                 foreach ($sheetData as $key => &$row) {
-                    $this->rowCallback($importConfig, $sheet, $row, $header);
+                    $this->rowCallback($config, $sheet, $row, $header);
                 }
                 $importData->addSheetData($sheetData, $sheetName);
             } else {
                 // 执行回调
                 while (null !== $row = $this->excel->nextRow()) {
-                    $this->rowCallback($importConfig, $sheet, $row, $header);
+                    $this->rowCallback($config, $sheet, $row, $header);
                 }
             }
         }
 
-        $this->event->dispatch(make(AfterImportSheet::class, $eventParam));
+        $this->event->dispatch(new AfterImportSheet($config, $this));
     }
-
 
 
     /**

@@ -23,18 +23,20 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
+use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
+use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExportData;
+use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
-use function Hyperf\Support\make;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
@@ -65,15 +67,9 @@ abstract class Driver implements DriverInterface
     {
         try {
             $this->formatConfig($config);
-            /**
-             * @var ExportData $exportData
-             */
+
             $exportData = new ExportData(['config' => $config]);
 
-            $eventParam = [
-                'config' => $config,
-                'driver' => $this
-            ];
             if ($config->getIsAsync()) {
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
                     throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
@@ -82,29 +78,20 @@ abstract class Driver implements DriverInterface
                 return $exportData;
             }
 
-            $this->event->dispatch(make(BeforeExport::class, $eventParam));
-
+            $this->event->dispatch(new BeforeExport($config, $this));
 
             $path = $this->exportExcel($config);
 
             $exportData->response = $this->exportOutPut($config, $path);
 
-            $this->event->dispatch(make(AfterExport::class, $eventParam));
+            $this->event->dispatch(new AfterExport($config, $this));
 
             return $exportData;
         } catch (ExcelException $exception) {
-            $this->event->dispatch(make(Error::class, [
-                'config' => $config,
-                'driver' => $this,
-                'exception' => $exception,
-            ]));
+            $this->event->dispatch(new Error($config, $this, $exception));
             throw $exception;
         } catch (\Throwable $throwable) {
-            $this->event->dispatch(make(Error::class, [
-                'config' => $config,
-                'driver' => $this,
-                'exception' => $throwable,
-            ]));
+            $this->event->dispatch(new Error($config, $this, $throwable));
             $this->logger->error('export error:' . $throwable->getMessage(), ['exception' => $throwable]);
             throw $throwable;
         }
@@ -112,7 +99,37 @@ abstract class Driver implements DriverInterface
 
     public function import(ImportConfig $config)
     {
+        $config = $this->formatConfig($config);
 
+        try {
+            $importData = new ImportData([
+                'config' => $config,
+            ]);
+
+            if ($config->getIsAsync()) {
+                $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));
+                return $importData;
+            }
+            $this->event->dispatch(new BeforeImport($config, $this));
+            $config->setTempPath($this->fileToTemp($config->getPath()));
+            $importData = $this->importExcel($config);
+
+            // 删除临时文件
+            Helper::deleteFile($config->getTempPath());
+
+            $this->event->dispatch(new AfterImport($config, $this));
+        } catch (ExcelException $exception) {
+
+            $this->event->dispatch(new Error($config, $this, $exception));
+            throw $exception;
+        } catch (\Throwable $throwable) {
+
+            $this->event->dispatch(new Error($config, $this, $throwable));
+            $this->logger->error('export error:' . $throwable->getMessage(), ['exception' => $throwable]);
+            throw $throwable;
+        }
+
+        return $importData;
     }
 
 
@@ -134,17 +151,43 @@ abstract class Driver implements DriverInterface
             'importConfig' => $config,
             'row' => $row,
         ]);
-        $eventParam = [
-            'config' => $config,
-            'driver' => $this,
-        ];
-        $this->event->dispatch(make(BeforeImportData::class, $eventParam));
+
+        $this->event->dispatch(new BeforeImportData($config, $this));
 
         $result = call_user_func($callback, $importRowCallbackParam);
 
-        $this->event->dispatch(make(AfterImportData::class, $eventParam));
+        $this->event->dispatch(new AfterImportData($config, $this));
 
         return $result ?? null;
+    }
+
+
+    /**
+     * 文件to临时文件
+     *
+     * @param $path
+     * @return false|string
+     * @throws ExcelException
+     */
+    protected function fileToTemp($path)
+    {
+        $filePath = Helper::getTempFileName();
+
+        if (!Helper::isUrl($path)) {
+            // 本地文件
+            if (!is_file($path)) {
+                throw new ExcelException('File not exists');
+            }
+            if (!copy($path, $filePath)) {
+                throw new ExcelException('File copy error');
+            }
+        } else {
+            // 远程文件
+            if (!Helper::downloadFile($path, $filePath)) {
+                throw new ExcelException('File download error');
+            }
+        }
+        return $filePath;
     }
 
 
@@ -171,16 +214,11 @@ abstract class Driver implements DriverInterface
             'totalCount' => $totalCount,
         ]);
 
-        $eventParam = [
-            'config' => $config,
-            'driver' => $this,
-        ] ;
-
-        $this->event->dispatch(make(BeforeExportData::class, $eventParam));
+        $this->event->dispatch(new BeforeExportData($config, $this));
 
         $result = call_user_func($callback, $exportCallbackParam);
 
-        $this->event->dispatch(make(AfterExportData::class, $eventParam));
+        $this->event->dispatch(new AfterExportData($config, $this));
 
         return $result;
     }
@@ -244,12 +282,11 @@ abstract class Driver implements DriverInterface
     }
 
     /**
-     * 构建token
+     * token
      *
      * @return string
-     * @throws \yii\base\Exception
      */
-    protected function buildToken()
+    protected function buildToken(): string
     {
         return Helper::uuid4();
     }
@@ -262,7 +299,7 @@ abstract class Driver implements DriverInterface
      */
     protected function buildExportPath(ExportConfig $config)
     {
-        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . make($this->config['export']['pathStrategy'], ['config' => $config])->getPath($config);
+        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . (new $this->config['export']['pathStrategy'](['config' => $config]))->getPath($config);
     }
 
     abstract function exportExcel(ExportConfig $config): string;

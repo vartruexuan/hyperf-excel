@@ -64,6 +64,17 @@ class Helper
     }
 
     /**
+     * 是否是远程地址
+     *
+     * @param $url
+     * @return false|int
+     */
+    public static function isUrl($url)
+    {
+        return preg_match('/^http[s]?:\/\//', $url);
+    }
+
+    /**
      * 获取文件mime类型
      *
      * @param $filePath
