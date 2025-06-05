@@ -40,6 +40,7 @@ use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
+use Vartruexuan\HyperfExcel\Progress\Progress;
 
 abstract class Driver implements DriverInterface
 {
@@ -53,6 +54,8 @@ abstract class Driver implements DriverInterface
 
     public LoggerInterface $logger;
 
+    public Progress $progress;
+
     public function __construct(protected ContainerInterface $container, protected array $config)
     {
         $this->event = $container->get(EventDispatcherInterface::class);
@@ -61,6 +64,9 @@ abstract class Driver implements DriverInterface
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($config['filesystem']['storage'] ?? 'local');
         $this->logger = $this->container->get(LoggerFactory::class)->get($this->config['logger']['name'] ?? 'hyperf-excel');
         $this->packer = $container->get($config['packer'] ?? PhpSerializerPacker::class);
+        $this->progress = make(Progress::class, array_merge($this->config['progress'] ?? [], [
+            'driver' => $this,
+        ]));
     }
 
     public function export(ExportConfig $config): ExportData
@@ -135,35 +141,6 @@ abstract class Driver implements DriverInterface
 
 
     /**
-     * 导入行回调
-     *
-     * @param callable $callback
-     * @param ImportConfig $config
-     * @param ImportSheet $sheet
-     * @param array $row
-     *
-     * @return mixed|null
-     */
-    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row)
-    {
-        $importRowCallbackParam = new ImportRowCallbackParam([
-            'excel' => $this,
-            'sheet' => $sheet,
-            'importConfig' => $config,
-            'row' => $row,
-        ]);
-
-        $this->event->dispatch(new BeforeImportData($config, $this));
-
-        $result = call_user_func($callback, $importRowCallbackParam);
-
-        $this->event->dispatch(new AfterImportData($config, $this));
-
-        return $result ?? null;
-    }
-
-
-    /**
      * 文件to临时文件
      *
      * @param $path
@@ -215,14 +192,44 @@ abstract class Driver implements DriverInterface
             'totalCount' => $totalCount,
         ]);
 
-        $this->event->dispatch(new BeforeExportData($config, $this));
+        $this->event->dispatch(new BeforeExportData($config, $this, $exportCallbackParam));
 
         $result = call_user_func($callback, $exportCallbackParam);
 
-        $this->event->dispatch(new AfterExportData($config, $this));
+        $this->event->dispatch(new AfterExportData($config, $this, $exportCallbackParam));
 
         return $result;
     }
+
+
+    /**
+     * 导入行回调
+     *
+     * @param callable $callback
+     * @param ImportConfig $config
+     * @param ImportSheet $sheet
+     * @param array $row
+     *
+     * @return mixed|null
+     */
+    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row)
+    {
+        $importRowCallbackParam = new ImportRowCallbackParam([
+            'excel' => $this,
+            'sheet' => $sheet,
+            'config' => $config,
+            'row' => $row,
+        ]);
+
+        $this->event->dispatch(new BeforeImportData($config, $this, $importRowCallbackParam));
+
+        $result = call_user_func($callback, $importRowCallbackParam);
+
+        $this->event->dispatch(new AfterImportData($config, $this, $importRowCallbackParam));
+
+        return $result ?? null;
+    }
+
 
     /**
      * 导出文件输出
@@ -254,7 +261,6 @@ abstract class Driver implements DriverInterface
                 throw new ExcelException('outPutType error');
         }
     }
-
 
     /**
      * 构建配置

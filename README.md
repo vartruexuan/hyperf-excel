@@ -12,7 +12,7 @@ excel 导入导出,支持异步、进度构建。
 - [x] 导入、导出excel
 - [x] 支持异步操作,进度构建,进度消息输出
 - [x] 格式 `xlsx`
-- [ ] ...
+- [x] 支持驱动 `xlswriter`
 
 # 安装
 - 安装依赖拓展 [xlswriter](https://xlswriter-docs.viest.me/zh-cn/an-zhuang)
@@ -23,7 +23,18 @@ pecl install xlswriter
 ```shell
 composer require vartruexuan/hyperf-excel
 ```
-## 使用
+- 构建配置
+```shell
+php bin/hyperf.php vendor:publish vartruexuan/hyperf-excel
+```
+# 使用
+
+- 导出
+```php
+
+
+```
+
 
 ## License
 

@@ -21,6 +21,13 @@ abstract class BaseConfig extends BaseObject
     public bool $isAsync = false;
 
     /**
+     * 页码配置
+     *
+     * @var array
+     */
+    public array $sheets = [];
+
+    /**
      * token
      *
      * @var string
@@ -47,5 +54,27 @@ abstract class BaseConfig extends BaseObject
     public function getIsAsync(): bool
     {
         return  $this->isAsync;
+    }
+
+    /**
+     * 获取页配置
+     *
+     * @return array
+     */
+    public function getSheets(): array
+    {
+        return $this->sheets;
+    }
+
+    /**
+     * 设置页
+     *
+     * @param $sheets
+     * @return $this
+     */
+    public function setSheets($sheets): static
+    {
+        $this->sheets = $sheets;
+        return $this;
     }
 }

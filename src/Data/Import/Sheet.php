@@ -9,16 +9,16 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
 class Sheet extends BaseObject
 {
 
-    // 读取sheet下标/名称
-    public const SHEET_READ_TYPE_NAME = 'name';
-    public const SHEET_READ_TYPE_INDEX = 'index';
-
     /**
      * 页名
      *
      * @var string
      */
     public string $name = 'sheet1';
+
+    // 读取sheet下标/名称
+    public const SHEET_READ_TYPE_NAME = 'name';
+    public const SHEET_READ_TYPE_INDEX = 'index';
 
     /**
      * 页下标
@@ -33,7 +33,6 @@ class Sheet extends BaseObject
      * @var string
      */
     public string $readType = self::SHEET_READ_TYPE_NAME;
-
 
     /**
      * 是否设置列头

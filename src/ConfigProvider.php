@@ -11,6 +11,8 @@ declare(strict_types=1);
  */
 namespace Vartruexuan\HyperfExcel;
 
+use Vartruexuan\HyperfExcel\Listener\ProgressListener;
+
 class ConfigProvider
 {
     public function __invoke(): array
@@ -20,7 +22,9 @@ class ConfigProvider
             ],
             'commands' => [
             ],
-
+            'listeners' => [
+                ProgressListener::class,
+            ],
             'publish' => [
                 [
                     'id' => 'config',

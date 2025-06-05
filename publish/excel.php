@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Hyperf\Codec\Packer\PhpSerializerPacker;
+
 return [
     'default' => [
         'driver' => \Vartruexuan\HyperfExcel\Driver\XlsWriterDriver::class,
@@ -29,6 +31,11 @@ return [
             // 导出文件地址构建策略
             'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeStrategy::class,
         ],
+        // 进度处理
+        'progress' => [
+            'enabled' => true,
+            'prefix' => 'HyperfExcel:',
+        ],
+        'pack' => PhpSerializerPacker::class,
     ]
-
 ];

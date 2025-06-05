@@ -2,8 +2,41 @@
 
 namespace Vartruexuan\HyperfExcel\Listener;
 
+use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\Event;
+use Vartruexuan\HyperfExcel\Progress\Progress;
+
 class ProgressListener extends BaseListener
 {
+
+    protected Progress $progress;
+
+    public function __construct(ContainerInterface $container)
+    {
+        parent::__construct($container);
+    }
+
+    function beforeExport(Event $event)
+    {
+       // 初始化进度信息
+        $event->driver->progress->initRecord($event->config);
+    }
+
+    function beforeExportExcel(object $event)
+    {
+        // TODO: Implement beforeExportExcel() method.
+    }
+
+    function beforeExportData(object $event)
+    {
+        // TODO: Implement beforeExportData() method.
+    }
+
+    function beforeExportSheet(object $event)
+    {
+        // TODO: Implement beforeExportSheet() method.
+    }
 
     function afterExport(object $event)
     {
@@ -25,25 +58,7 @@ class ProgressListener extends BaseListener
         // TODO: Implement afterExportSheet() method.
     }
 
-    function beforeExport(object $event)
-    {
-        // TODO: Implement beforeExport() method.
-    }
 
-    function beforeExportExcel(object $event)
-    {
-        // TODO: Implement beforeExportExcel() method.
-    }
-
-    function beforeExportData(object $event)
-    {
-        // TODO: Implement beforeExportData() method.
-    }
-
-    function beforeExportSheet(object $event)
-    {
-        // TODO: Implement beforeExportSheet() method.
-    }
 
     function afterImport(object $event)
     {

@@ -41,30 +41,6 @@ class ExportConfig extends BaseConfig
         return $this->params;
     }
 
-
-    /**
-     * 获取页码配置
-     *
-     * @return Sheet[]
-     */
-    public function getSheets()
-    {
-        return $this->sheets;
-    }
-
-    /**
-     * 设置页
-     *
-     * @param $sheets
-     * @return $this
-     */
-    public function setSheets($sheets): static
-    {
-        $this->sheets = $sheets;
-        return $this;
-    }
-
-
     public function __serialize(): array
     {
         return [

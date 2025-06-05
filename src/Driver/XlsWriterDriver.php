@@ -188,7 +188,7 @@ class XlsWriterDriver extends Driver
             if ($sheet->isReturnSheetData) {
                 // 返回全量数据
                 $sheetData = $this->excel->getSheetData();
-                foreach ($sheetData as $key => &$row) {
+                foreach ($sheetData as $row) {
                     $this->rowCallback($config, $sheet, $row, $header);
                 }
             } else {

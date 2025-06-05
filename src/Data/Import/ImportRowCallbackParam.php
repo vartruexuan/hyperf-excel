@@ -16,7 +16,7 @@ class ImportRowCallbackParam extends BaseObject
      * 
      * @var ImportConfig 
      */
-    public ImportConfig $importConfig;
+    public ImportConfig $config;
 
     /**
      * 页码信息
