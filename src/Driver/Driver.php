@@ -41,6 +41,8 @@ use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Progress\Progress;
+use function Hyperf\Support\make;
+
 
 abstract class Driver implements DriverInterface
 {
@@ -50,7 +52,7 @@ abstract class Driver implements DriverInterface
     public Redis $redis;
     public Filesystem $filesystem;
     public QueueDriverInterface $queue;
-    protected PackerInterface $packer;
+    public PackerInterface $packer;
 
     public LoggerInterface $logger;
 
@@ -64,9 +66,10 @@ abstract class Driver implements DriverInterface
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($config['filesystem']['storage'] ?? 'local');
         $this->logger = $this->container->get(LoggerFactory::class)->get($this->config['logger']['name'] ?? 'hyperf-excel');
         $this->packer = $container->get($config['packer'] ?? PhpSerializerPacker::class);
-        $this->progress = make(Progress::class, array_merge($this->config['progress'] ?? [], [
+        $this->progress = make(Progress::class, [
+            'config' => $this->config['progress'] ?? [],
             'driver' => $this,
-        ]));
+        ]);
     }
 
     public function export(ExportConfig $config): ExportData
@@ -88,7 +91,7 @@ abstract class Driver implements DriverInterface
 
             $path = $this->exportExcel($config);
 
-            $exportData->response = $this->exportOutPut($config, $path);
+            $exportData->response = '测试'; //$this->exportOutPut($config, $path);
 
             $this->event->dispatch(new AfterExport($config, $this));
 
@@ -196,7 +199,7 @@ abstract class Driver implements DriverInterface
 
         $result = call_user_func($callback, $exportCallbackParam);
 
-        $this->event->dispatch(new AfterExportData($config, $this, $exportCallbackParam));
+        $this->event->dispatch(new AfterExportData($config, $this, $exportCallbackParam, $result ?? []));
 
         return $result;
     }

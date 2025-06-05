@@ -11,7 +11,7 @@ use Vartruexuan\HyperfExcel\Driver\Driver;
 class BeforeExportData extends Event
 {
 
-    public function __construct(BaseConfig $config, Driver $driver,ExportCallbackParam $exportCallbackParam)
+    public function __construct(public BaseConfig $config, public Driver $driver,public ExportCallbackParam $exportCallbackParam)
     {
         parent::__construct($config, $driver);
     }

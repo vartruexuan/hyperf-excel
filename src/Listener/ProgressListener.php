@@ -3,9 +3,14 @@
 namespace Vartruexuan\HyperfExcel\Listener;
 
 use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Event\AfterExportData;
+use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeExportData;
+use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Event\Event;
 use Vartruexuan\HyperfExcel\Progress\Progress;
+use Vartruexuan\HyperfExcel\Progress\ProgressData;
 
 class ProgressListener extends BaseListener
 {
@@ -19,7 +24,9 @@ class ProgressListener extends BaseListener
 
     function beforeExport(Event $event)
     {
-       // 初始化进度信息
+        /**
+         * @var BeforeExport $event
+         */
         $event->driver->progress->initRecord($event->config);
     }
 
@@ -30,7 +37,13 @@ class ProgressListener extends BaseListener
 
     function beforeExportData(object $event)
     {
-        // TODO: Implement beforeExportData() method.
+        /**
+         * @var BeforeExportData $event
+         */
+        $event->driver->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
+            'total' => $event->exportCallbackParam->totalCount,
+            'status'=> ProgressData::PROGRESS_STATUS_PROCESS,
+        ]));
     }
 
     function beforeExportSheet(object $event)
@@ -45,20 +58,32 @@ class ProgressListener extends BaseListener
 
     function afterExportData(object $event)
     {
-        // TODO: Implement afterExportData() method.
+        /**
+         * @var AfterExportData $event
+         */
+        $success = count($event->data ?? []);
+        $event->driver->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
+            'status' => ProgressData::PROGRESS_STATUS_PROCESS,
+            'success' => $success,
+            'progress' => $success,
+        ]));
     }
 
     function afterExportExcel(object $event)
     {
+
         // TODO: Implement afterExportExcel() method.
     }
 
     function afterExportSheet(object $event)
     {
-        // TODO: Implement afterExportSheet() method.
+        /**
+         * @var AfterExportSheet $event
+         */
+        $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
+            'status' => ProgressData::PROGRESS_STATUS_END,
+        ]));
     }
-
-
 
     function afterImport(object $event)
     {
@@ -102,6 +127,11 @@ class ProgressListener extends BaseListener
 
     function error(object $event)
     {
-        // TODO: Implement error() method.
+        /**
+         * @var Error  $event
+         */
+        $event->driver->progress->setProgress($event->config, new ProgressData([
+            'status' => ProgressData::PROGRESS_STATUS_FAIL,
+        ]));
     }
 }

@@ -118,7 +118,7 @@ class XlsWriterDriver extends Driver
             $this->excel->addSheet($sheet->getName());
         }
 
-        $this->event->dispatch(new BeforeExportSheet($config, $this));
+        $this->event->dispatch(new BeforeExportSheet($config, $this, $sheet));
 
         $this->excel->header($sheet->getHeaders());
 
@@ -154,7 +154,7 @@ class XlsWriterDriver extends Driver
             $page++;
         } while (!$isEnd);
 
-        $this->event->dispatch(new AfterExportSheet($config, $this));
+        $this->event->dispatch(new AfterExportSheet($config, $this, $sheet));
     }
 
 

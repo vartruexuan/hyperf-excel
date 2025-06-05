@@ -41,12 +41,29 @@ class ProgressRecord extends BaseObject
      */
     public $data;
 
-
-    public function __serialize(): array
+    /**
+     * 获取页码进度
+     *
+     * @param string $sheetName
+     * @return ProgressData
+     */
+    public function getProgressBySheet(string $sheetName): ProgressData
     {
-        return [
-
-
-        ];
+        return $this->sheetListProgress[$sheetName] ?? new ProgressData();
     }
+
+    /**
+     * 设置页进度
+     *
+     * @param string $sheetName
+     * @param ProgressData $progress
+     * @return ProgressRecord
+     */
+    public function setProgressBySheet(string $sheetName, ProgressData $progress): static
+    {
+        $this->sheetListProgress[$sheetName] = $progress;
+        return $this;
+    }
+
+
 }

@@ -34,7 +34,7 @@ return [
         // 进度处理
         'progress' => [
             'enabled' => true,
-            'prefix' => 'HyperfExcel:',
+            'prefix' => 'HyperfExcel',
         ],
         'pack' => PhpSerializerPacker::class,
     ]

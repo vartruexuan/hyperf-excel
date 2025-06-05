@@ -8,12 +8,7 @@ use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class Progress
 {
-    public bool $enabled = true;
-    public string $prefix = 'HyperfExcel:';
-
-    public Driver $driver;
-
-    public function __construct(protected ContainerInterface $container, protected array $config)
+    public function __construct(protected ContainerInterface $container, protected array $config, protected Driver $driver)
     {
     }
 
@@ -29,13 +24,117 @@ class Progress
         foreach ($config->getSheets() as $sheet) {
             $sheetListProgress[$sheet->name] = new ProgressData();
         }
-
         $progressRecord = new ProgressRecord([
             'sheetListProgress' => $sheetListProgress,
             'progress' => new ProgressData(),
         ]);
-        var_dump($progressRecord);
+        // todo 写入redis
+        $this->set($config, $progressRecord);
+
         return $progressRecord;
+    }
+
+    /**
+     * 获取进度记录
+     *
+     * @param BaseConfig $config
+     * @return ProgressRecord
+     */
+    public function getRecord(BaseConfig $config): ProgressRecord
+    {
+        return $this->get($config);
+    }
+
+    /**
+     * 设置页面进度
+     *
+     * @param BaseConfig $config
+     * @param string $sheetName
+     * @param ProgressData $progressData
+     * @return ProgressData
+     */
+    public function setSheetProgress(BaseConfig $config, string $sheetName, ProgressData $progressData): ProgressData
+    {
+        $progressRecord = $this->getRecord($config);
+        $sheetProgress = $progressRecord->getProgressBySheet($sheetName);
+        $sheetProgress->status = $progressData->status;
+        if ($progressData->total > 0) {
+            $sheetProgress->total = $progressData->total;
+            $progressRecord->progress->total += $progressData->total;
+        }
+        if ($progressData->progress > 0) {
+            $sheetProgress->progress += $progressData->progress;
+            $progressRecord->progress->progress += $progressData->progress;
+            if ($sheetProgress->progress == $sheetProgress->total) {
+                $sheetProgress->status = ProgressData::PROGRESS_STATUS_END;
+            }
+        }
+        if ($progressData->success > 0) {
+            $sheetProgress->success += $progressData->success;
+            $progressRecord->progress->success += $progressData->progress;
+        }
+        if ($progressData->fail > 0) {
+            $sheetProgress->fail += $progressData->fail;
+            $progressRecord->progress->fail += $progressData->progress;
+        }
+        // 处理总进度
+        $progressRecord = $this->setProgressStatus($progressRecord);
+        $progressRecord->setProgressBySheet($sheetName, $sheetProgress);
+        $this->set($config, $progressRecord);
+        return $sheetProgress;
+    }
+
+    public function setProgress(BaseConfig $config, ProgressData $progressData): ProgressRecord
+    {
+        $progressRecord = $this->getRecord($config);
+        $progressRecord->progress->status = $progressData->status;
+        if ($progressData->total > 0) {
+            $progressRecord->progress->total = $progressData->total;
+        }
+        if ($progressData->progress > 0) {
+            $progressRecord->progress->progress += $progressData->progress;
+        }
+        if ($progressData->success > 0) {
+            $progressRecord->progress->success += $progressData->progress;
+        }
+        if ($progressData->fail > 0) {
+            $progressRecord->progress->fail += $progressData->progress;
+        }
+        $this->set($config, $progressRecord);
+        return $progressRecord;
+    }
+
+
+    protected function setProgressStatus(ProgressRecord $progressRecord)
+    {
+        // 处理中
+        $status = array_map(function ($item) {
+            return $item->status;
+        }, $progressRecord->sheetListProgress);
+        $status = array_unique($status);
+        $count = count($status);
+        if ($count <= 1) {
+            $progressRecord->progress->status = current($status);
+        } else {
+            $progressRecord->progress->status = ProgressData::PROGRESS_STATUS_PROCESS;
+        }
+        return $progressRecord;
+    }
+
+    public function set(BaseConfig $config, ProgressRecord $progressRecord)
+    {
+        return $this->driver->redis->set($this->getProgressKey($config), $this->driver->packer->pack($progressRecord));
+    }
+
+    public function get(BaseConfig $config): ?ProgressRecord
+    {
+        $record = $this->driver->redis->get($this->getProgressKey($config));
+        return $this->driver->packer->unpack($record);
+    }
+
+    public function getProgressKey(BaseConfig $config)
+    {
+        return sprintf('%s_progress:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
     }
 
 }
