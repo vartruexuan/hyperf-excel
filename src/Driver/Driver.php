@@ -97,7 +97,7 @@ abstract class Driver implements DriverInterface
         }
     }
 
-    public function import(ImportConfig $config)
+    public function import(ImportConfig $config): importData
     {
         $config = $this->formatConfig($config);
 
@@ -112,7 +112,8 @@ abstract class Driver implements DriverInterface
             }
             $this->event->dispatch(new BeforeImport($config, $this));
             $config->setTempPath($this->fileToTemp($config->getPath()));
-            $importData = $this->importExcel($config);
+
+            $this->importExcel($config);
 
             // 删除临时文件
             Helper::deleteFile($config->getTempPath());

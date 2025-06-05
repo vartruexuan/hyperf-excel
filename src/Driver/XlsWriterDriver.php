@@ -9,7 +9,6 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
-use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Event\AfterExportExcel;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
 use Vartruexuan\HyperfExcel\Event\AfterImportExcel;
@@ -63,14 +62,10 @@ class XlsWriterDriver extends Driver
      * import
      *
      * @param ImportConfig $config
-     * @return ImportData
      * @throws ExcelException
      */
-    public function importExcel(ImportConfig $config): ImportData
+    public function importExcel(ImportConfig $config)
     {
-        $importData = new ImportData([
-            'config' => $config,
-        ]);
         $filePath = $config->getTempPath();
         $fileName = basename($filePath);
 
@@ -100,16 +95,23 @@ class XlsWriterDriver extends Driver
          * @var Sheet $sheet
          */
         foreach ($sheets as $sheet) {
-            $this->importSheet($sheet, $config, $importData);
+            $this->importSheet($sheet, $config);
         }
 
         $this->excel->close();
 
         $this->event->dispatch(new AfterImportExcel($config, $this));
-        return $importData;
     }
 
 
+    /**
+     * export sheet
+     *
+     * @param ExportSheet $sheet
+     * @param ExportConfig $config
+     * @param int|string $index
+     * @return void
+     */
     protected function exportSheet(ExportSheet $sheet, ExportConfig $config, int|string $index)
     {
         if ($index > 0) {
@@ -139,7 +141,6 @@ class XlsWriterDriver extends Driver
                 };
             }
 
-
             $list = $this->exportDataCallback($dataCallback, $config, $sheet, $page, min($totalCount, $pageSize), $totalCount);
 
             $listCount = count($list ?? []);
@@ -158,14 +159,13 @@ class XlsWriterDriver extends Driver
 
 
     /**
-     * 导出页码
+     * import sheet
      *
      * @param ImportSheet $sheet
      * @param ImportConfig $config
-     * @param ImportData $importData
      * @return void
      */
-    protected function importSheet(ImportSheet $sheet, ImportConfig $config, ImportData &$importData)
+    protected function importSheet(ImportSheet $sheet, ImportConfig $config)
     {
         $sheetName = $sheet->name;
 
@@ -191,7 +191,6 @@ class XlsWriterDriver extends Driver
                 foreach ($sheetData as $key => &$row) {
                     $this->rowCallback($config, $sheet, $row, $header);
                 }
-                $importData->addSheetData($sheetData, $sheetName);
             } else {
                 // 执行回调
                 while (null !== $row = $this->excel->nextRow()) {
