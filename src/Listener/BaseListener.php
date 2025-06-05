@@ -72,9 +72,14 @@ abstract class BaseListener implements ListenerInterface
         ];
     }
 
+    protected function getEventClass(object $event)
+    {
+        return lcfirst(basename(str_replace('\\', '/', get_class($event))));
+
+    }
     public function process(object $event): void
     {
-        $className = lcfirst(basename(str_replace('\\', '/', get_class($event))));
+        $className = $this->getEventClass($event);
         $this->logger = $event->driver->logger;
         $this->{$className}($event);
     }
