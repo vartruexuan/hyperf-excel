@@ -10,16 +10,6 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
  */
 class ProgressRecord extends BaseObject
 {
-
-    public $token;
-
-    /**
-     * 页码信息
-     *
-     * @var array|null
-     */
-    public ?array $sheetList = [];
-
     /**
      * 页码进度信息
      *

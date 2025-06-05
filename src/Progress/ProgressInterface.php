@@ -8,10 +8,10 @@ interface ProgressInterface
 {
     public function initRecord(BaseConfig $config): ProgressRecord;
 
-    public function updateRecord(BaseConfig $config): ProgressRecord;
-
     public function getRecord(BaseConfig $config): ProgressRecord;
 
-    public function setSheetProgress(BaseConfig $config): ProgressRecord;
+    public function setSheetProgress(BaseConfig $config, string $sheetName, ProgressData $progressData): ProgressData;
+
+    public function setProgress(BaseConfig $config, ProgressData $progressData): ProgressRecord;
 
 }

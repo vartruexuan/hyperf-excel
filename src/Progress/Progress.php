@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 
-class Progress
+class Progress implements ProgressInterface
 {
     public function __construct(protected ContainerInterface $container, protected array $config, protected Driver $driver)
     {
@@ -28,7 +28,6 @@ class Progress
             'sheetListProgress' => $sheetListProgress,
             'progress' => new ProgressData(),
         ]);
-        // todo 写入redis
         $this->set($config, $progressRecord);
 
         return $progressRecord;
@@ -104,7 +103,6 @@ class Progress
         return $progressRecord;
     }
 
-
     protected function setProgressStatus(ProgressRecord $progressRecord)
     {
         // 处理中
@@ -121,18 +119,18 @@ class Progress
         return $progressRecord;
     }
 
-    public function set(BaseConfig $config, ProgressRecord $progressRecord)
+    protected function set(BaseConfig $config, ProgressRecord $progressRecord)
     {
         return $this->driver->redis->set($this->getProgressKey($config), $this->driver->packer->pack($progressRecord));
     }
 
-    public function get(BaseConfig $config): ?ProgressRecord
+    protected function get(BaseConfig $config): ?ProgressRecord
     {
         $record = $this->driver->redis->get($this->getProgressKey($config));
         return $this->driver->packer->unpack($record);
     }
 
-    public function getProgressKey(BaseConfig $config)
+    protected function getProgressKey(BaseConfig $config)
     {
         return sprintf('%s_progress:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
     }
