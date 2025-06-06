@@ -9,11 +9,8 @@ use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class Error extends Event
 {
-    public \Throwable $exception;
-
-    public function __construct(BaseConfig $config, Driver $driver, \Throwable $exception)
+    public function __construct(public BaseConfig $config, public Driver $driver, public \Throwable $exception)
     {
         parent::__construct($config, $driver);
-        $this->exception = $exception;
     }
 }
