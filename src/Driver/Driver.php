@@ -61,11 +61,11 @@ abstract class Driver implements DriverInterface
     public function __construct(protected ContainerInterface $container, protected array $config)
     {
         $this->event = $container->get(EventDispatcherInterface::class);
-        $this->redis = $this->container->get(RedisFactory::class)->get($config['redis']['pool'] ?? 'default');
-        $this->queue = $this->container->get(DriverFactory::class)->get($config['queue']['name'] ?? 'default');
-        $this->filesystem = $this->container->get(FilesystemFactory::class)->get($config['filesystem']['storage'] ?? 'local');
+        $this->redis = $this->container->get(RedisFactory::class)->get($this->config['redis']['pool'] ?? 'default');
+        $this->queue = $this->container->get(DriverFactory::class)->get($this->config['queue']['name'] ?? 'default');
+        $this->filesystem = $this->container->get(FilesystemFactory::class)->get($this->config['filesystem']['storage'] ?? 'local');
         $this->logger = $this->container->get(LoggerFactory::class)->get($this->config['logger']['name'] ?? 'hyperf-excel');
-        $this->packer = $container->get($config['packer'] ?? PhpSerializerPacker::class);
+        $this->packer = $container->get(PhpSerializerPacker::class);
         $this->progress = make(Progress::class, [
             'config' => $this->config['progress'] ?? [],
             'driver' => $this,
