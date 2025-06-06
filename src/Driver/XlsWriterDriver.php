@@ -169,7 +169,7 @@ class XlsWriterDriver extends Driver
     {
         $sheetName = $sheet->name;
 
-        $this->event->dispatch(new BeforeImportSheet($config, $this));
+        $this->event->dispatch(new BeforeImportSheet($config, $this, $sheet));
 
         $this->excel->openSheet($sheetName);
 
@@ -199,7 +199,7 @@ class XlsWriterDriver extends Driver
             }
         }
 
-        $this->event->dispatch(new AfterImportSheet($config, $this));
+        $this->event->dispatch(new AfterImportSheet($config, $this, $sheet));
     }
 
 

@@ -106,7 +106,9 @@ class Progress implements ProgressInterface
 
     public function pushMessage(BaseConfig $config, string $message)
     {
-        return $this->driver->redis->lpush($this->getMessageKey($config), $message);
+        $key = $this->getMessageKey($config);
+        $this->driver->redis->lpush($key, $message);
+        $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
     public function popMessage(BaseConfig $config, int $num): array
@@ -119,7 +121,6 @@ class Progress implements ProgressInterface
         }
         return $messages;
     }
-
 
     protected function setProgressStatus(ProgressRecord $progressRecord)
     {
@@ -161,6 +162,5 @@ class Progress implements ProgressInterface
     {
         return sprintf('%s_message:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
     }
-
 
 }
