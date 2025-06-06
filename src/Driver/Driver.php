@@ -225,10 +225,12 @@ abstract class Driver implements DriverInterface
         ]);
 
         $this->event->dispatch(new BeforeImportData($config, $this, $importRowCallbackParam));
-
-        $result = call_user_func($callback, $importRowCallbackParam);
-
-        $this->event->dispatch(new AfterImportData($config, $this, $importRowCallbackParam));
+        try {
+            $result = call_user_func($callback, $importRowCallbackParam);
+        } catch (\Throwable $throwable) {
+            $exception = $throwable;
+        }
+        $this->event->dispatch(new AfterImportData($config, $this, $importRowCallbackParam, $exception ?? null));
 
         return $result ?? null;
     }

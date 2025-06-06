@@ -103,6 +103,24 @@ class Progress implements ProgressInterface
         return $progressRecord;
     }
 
+
+    public function pushMessage(BaseConfig $config, string $message)
+    {
+        return $this->driver->redis->lpush($this->getMessageKey($config), $message);
+    }
+
+    public function popMessage(BaseConfig $config, int $num): array
+    {
+        $messages = [];
+        for ($i = 0; $i < $num; $i++) {
+            if ($message = $this->driver->redis->lpop($this->getMessageKey($config), $num)) {
+                $messages[] = $message;
+            }
+        }
+        return $messages;
+    }
+
+
     protected function setProgressStatus(ProgressRecord $progressRecord)
     {
         // 处理中
@@ -119,14 +137,18 @@ class Progress implements ProgressInterface
         return $progressRecord;
     }
 
+
     protected function set(BaseConfig $config, ProgressRecord $progressRecord)
     {
-        return $this->driver->redis->set($this->getProgressKey($config), $this->driver->packer->pack($progressRecord));
+        $key = $this->getProgressKey($config);
+        $this->driver->redis->set($key, $this->driver->packer->pack($progressRecord));
+        $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
     protected function get(BaseConfig $config): ?ProgressRecord
     {
         $record = $this->driver->redis->get($this->getProgressKey($config));
+
         return $this->driver->packer->unpack($record);
     }
 
@@ -134,5 +156,11 @@ class Progress implements ProgressInterface
     {
         return sprintf('%s_progress:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
     }
+
+    protected function getMessageKey(BaseConfig $config)
+    {
+        return sprintf('%s_message:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
+    }
+
 
 }

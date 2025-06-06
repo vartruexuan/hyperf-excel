@@ -10,7 +10,7 @@ use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class AfterImportData extends Event
 {
-    public function __construct(public BaseConfig $config, public Driver $driver, public ImportRowCallbackParam $importCallbackParam)
+    public function __construct(public BaseConfig $config, public Driver $driver, public ImportRowCallbackParam $importCallbackParam, public ?\Throwable $exception = null)
     {
         parent::__construct($config, $driver);
     }

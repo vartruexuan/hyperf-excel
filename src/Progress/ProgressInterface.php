@@ -14,4 +14,8 @@ interface ProgressInterface
 
     public function setProgress(BaseConfig $config, ProgressData $progressData): ProgressRecord;
 
+    public function pushMessage(BaseConfig $config, string $message);
+
+    public function popMessage(BaseConfig $config, int $num): array;
+
 }

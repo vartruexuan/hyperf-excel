@@ -35,6 +35,7 @@ return [
         'progress' => [
             'enabled' => true,
             'prefix' => 'HyperfExcel',
+            'expire' => 3600, // 数据失效时间
         ],
         'pack' => PhpSerializerPacker::class,
     ]
