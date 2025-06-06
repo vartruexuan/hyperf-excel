@@ -115,7 +115,7 @@ class Progress implements ProgressInterface
     {
         $messages = [];
         for ($i = 0; $i < $num; $i++) {
-            if ($message = $this->driver->redis->lpop($this->getMessageKey($config), $num)) {
+            if ($message = $this->driver->redis->rpop($this->getMessageKey($config), $num)) {
                 $messages[] = $message;
             }
         }
