@@ -12,39 +12,5 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
  */
 class ImportData extends BaseObject
 {
-
-    public BaseConfig $config;
-
-    /**
-     * 页码返回数据
-     *
-     * @var
-     */
-    public array $sheetData =[];
-
-
-    /**
-     * 页码数据
-     *
-     * @param array $sheetData
-     * @param string $sheetName
-     * @return ImportData
-     */
-    public function addSheetData(array $sheetData, string $sheetName = 'sheet1')
-    {
-        $this->sheetData[strtolower($sheetName)] = $sheetData;
-        return $this;
-    }
-
-    /**
-     * 获取页数据
-     *
-     * @param string $sheetName
-     * @return mixed
-     */
-    public function getSheetData(string $sheetName = 'sheet1')
-    {
-        return $this->getSheetData(strtolower($sheetName));
-    }
-
+    public ImportConfig $config;
 }

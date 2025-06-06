@@ -91,9 +91,9 @@ abstract class Driver implements DriverInterface
 
             $path = $this->exportExcel($config);
 
-            $exportData->response = '测试'; //$this->exportOutPut($config, $path);
+            $this->exportOutPut($config, $path);
 
-            $this->event->dispatch(new AfterExport($config, $this));
+            $this->event->dispatch(new AfterExport($config, $this, $exportData));
 
             return $exportData;
         } catch (ExcelException $exception) {
@@ -111,9 +111,7 @@ abstract class Driver implements DriverInterface
         $config = $this->formatConfig($config);
 
         try {
-            $importData = new ImportData([
-                'config' => $config,
-            ]);
+            $importData = new ImportData(['config' => $config]);
 
             if ($config->getIsAsync()) {
                 $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));
@@ -127,7 +125,7 @@ abstract class Driver implements DriverInterface
             // 删除临时文件
             Helper::deleteFile($config->getTempPath());
 
-            $this->event->dispatch(new AfterImport($config, $this));
+            $this->event->dispatch(new AfterImport($config, $this, $importData));
         } catch (ExcelException $exception) {
 
             $this->event->dispatch(new Error($config, $this, $exception));

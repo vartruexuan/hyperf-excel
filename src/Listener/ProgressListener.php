@@ -68,11 +68,12 @@ class ProgressListener extends BaseListener
          * @var AfterExport $event
          */
         $record = $event->driver->progress->getRecord($event->config);
-        if (!in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL])) {
-            $event->driver->progress->setProgress($event->config, new ProgressData([
-                'status' => ProgressData::PROGRESS_STATUS_END,
-            ]));
-        }
+
+        $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
+        $data = $event->data ?: $record->data;
+        $event->driver->progress->setProgress($event->config, new ProgressData([
+            'status' => $status,
+        ]), $data);
     }
 
     function afterExportData(object $event)
@@ -150,7 +151,7 @@ class ProgressListener extends BaseListener
             'fail' => $event->exception ? 1 : 0,
         ]));
         if ($event->exception) {
-            $event->driver->progress->pushMessage($event->config, $event->exception->getMessage());
+            $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
         }
     }
 
@@ -178,6 +179,6 @@ class ProgressListener extends BaseListener
         $event->driver->progress->setProgress($event->config, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_FAIL,
         ]));
-        $event->driver->progress->pushMessage($event->config, $event->exception->getMessage());
+        $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
     }
 }

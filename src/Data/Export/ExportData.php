@@ -12,13 +12,20 @@ class ExportData extends BaseObject
     public ResponseInterface|string $response;
 
     public ExportConfig $config;
-
     /**
      * @return ResponseInterface|string
      */
     public function getResponse(): string|ResponseInterface
     {
         return $this->response;
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'response' => is_string($this->response) ? $this->response : '',
+            'config' => $this->config,
+        ];
     }
 
 }

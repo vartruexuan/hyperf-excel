@@ -4,6 +4,7 @@ namespace Vartruexuan\HyperfExcel\Progress;
 
 use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\BaseConfig;
+use Vartruexuan\HyperfExcel\Data\BaseObject;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class Progress implements ProgressInterface
@@ -28,7 +29,7 @@ class Progress implements ProgressInterface
             'sheetListProgress' => $sheetListProgress,
             'progress' => new ProgressData(),
         ]);
-        $this->set($config, $progressRecord);
+        $this->set($config->getToken(), $progressRecord);
 
         return $progressRecord;
     }
@@ -36,12 +37,12 @@ class Progress implements ProgressInterface
     /**
      * 获取进度记录
      *
-     * @param BaseConfig $config
+     * @param string $token
      * @return ProgressRecord
      */
-    public function getRecord(BaseConfig $config): ProgressRecord
+    public function getRecord(string $token): ProgressRecord
     {
-        return $this->get($config);
+        return $this->get($token);
     }
 
     /**
@@ -54,7 +55,7 @@ class Progress implements ProgressInterface
      */
     public function setSheetProgress(BaseConfig $config, string $sheetName, ProgressData $progressData): ProgressData
     {
-        $progressRecord = $this->getRecord($config);
+        $progressRecord = $this->getRecord($config->getToken());
         $sheetProgress = $progressRecord->getProgressBySheet($sheetName);
         $sheetProgress->status = $progressData->status;
         if ($progressData->total > 0) {
@@ -79,13 +80,13 @@ class Progress implements ProgressInterface
         // 处理总进度
         $progressRecord = $this->setProgressStatus($progressRecord);
         $progressRecord->setProgressBySheet($sheetName, $sheetProgress);
-        $this->set($config, $progressRecord);
+        $this->set($config->getToken(), $progressRecord);
         return $sheetProgress;
     }
 
-    public function setProgress(BaseConfig $config, ProgressData $progressData): ProgressRecord
+    public function setProgress(BaseConfig $config, ProgressData $progressData, BaseObject $data = null): ProgressRecord
     {
-        $progressRecord = $this->getRecord($config);
+        $progressRecord = $this->getRecord($config->getToken());
         $progressRecord->progress->status = $progressData->status;
         if ($progressData->total > 0) {
             $progressRecord->progress->total = $progressData->total;
@@ -99,23 +100,25 @@ class Progress implements ProgressInterface
         if ($progressData->fail > 0) {
             $progressRecord->progress->fail += $progressData->progress;
         }
-        $this->set($config, $progressRecord);
+        if ($data) {
+            $progressRecord->data = $data;
+        }
+        $this->set($config->getToken(), $progressRecord);
         return $progressRecord;
     }
 
-
-    public function pushMessage(BaseConfig $config, string $message)
+    public function pushMessage(string $token, string $message)
     {
-        $key = $this->getMessageKey($config);
+        $key = $this->getMessageKey($token);
         $this->driver->redis->lpush($key, $message);
         $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
-    public function popMessage(BaseConfig $config, int $num): array
+    public function popMessage(string $token, int $num): array
     {
         $messages = [];
         for ($i = 0; $i < $num; $i++) {
-            if ($message = $this->driver->redis->rpop($this->getMessageKey($config), $num)) {
+            if ($message = $this->driver->redis->rpop($this->getMessageKey($token), $num)) {
                 $messages[] = $message;
             }
         }
@@ -138,29 +141,28 @@ class Progress implements ProgressInterface
         return $progressRecord;
     }
 
-
-    protected function set(BaseConfig $config, ProgressRecord $progressRecord)
+    protected function set(string $token, ProgressRecord $progressRecord)
     {
-        $key = $this->getProgressKey($config);
+        $key = $this->getProgressKey($token);
         $this->driver->redis->set($key, $this->driver->packer->pack($progressRecord));
         $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
-    protected function get(BaseConfig $config): ?ProgressRecord
+    protected function get(string $token): ?ProgressRecord
     {
-        $record = $this->driver->redis->get($this->getProgressKey($config));
+        $record = $this->driver->redis->get($this->getProgressKey($token));
 
         return $this->driver->packer->unpack($record);
     }
 
-    protected function getProgressKey(BaseConfig $config)
+    protected function getProgressKey(string $token): string
     {
-        return sprintf('%s_progress:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
+        return sprintf('%s_progress:%s', $this->config['prefix'] ?? 'HyperfExcel', $token);
     }
 
-    protected function getMessageKey(BaseConfig $config)
+    protected function getMessageKey(string $token): string
     {
-        return sprintf('%s_message:%s', $this->config['prefix'] ?? 'HyperfExcel', $config->token);
+        return sprintf('%s_message:%s', $this->config['prefix'] ?? 'HyperfExcel', $token);
     }
 
 }
