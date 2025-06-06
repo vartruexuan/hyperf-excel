@@ -14,7 +14,6 @@ use Vartruexuan\HyperfExcel\Event\BeforeExportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
 use Vartruexuan\HyperfExcel\Event\Error;
-use Vartruexuan\HyperfExcel\Event\Event;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
 
@@ -28,7 +27,7 @@ class ProgressListener extends BaseListener
         parent::__construct($container);
     }
 
-    function beforeExport(Event $event)
+    function beforeExport(object $event)
     {
         /**
          * @var BeforeExport $event
