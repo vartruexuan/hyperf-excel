@@ -66,7 +66,7 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterExport $event
          */
-        $record = $event->driver->progress->getRecord($event->config);
+        $record = $event->driver->progress->getRecord($event->config->token);
 
         $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
         $data = $event->data ?: $record->data;
