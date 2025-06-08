@@ -74,7 +74,7 @@ class Progress implements ProgressInterface
         $sheetProgress->status = $progressData->status;
         if ($progressData->total > 0) {
             $sheetProgress->total = $progressData->total;
-            $progressRecord->progress->total += $progressData->total;
+            // $progressRecord->progress->total += $progressData->total;
         }
         if ($progressData->progress > 0) {
             $sheetProgress->progress += $progressData->progress;
@@ -141,8 +141,9 @@ class Progress implements ProgressInterface
 
     protected function setProgressStatus(ProgressRecord $progressRecord)
     {
-        // 处理中
-        $status = array_map(function ($item) {
+        $total = 0;
+        $status = array_map(function ($item)use(&$total) {
+            $total += $item->total;
             return $item->status;
         }, $progressRecord->sheetListProgress);
         $status = array_unique($status);
@@ -152,6 +153,8 @@ class Progress implements ProgressInterface
         } else {
             $progressRecord->progress->status = ProgressData::PROGRESS_STATUS_PROCESS;
         }
+        // 总数
+        $progressRecord->progress->total = $total;
         return $progressRecord;
     }
 
