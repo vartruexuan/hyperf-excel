@@ -309,7 +309,7 @@ abstract class Driver implements DriverInterface
      */
     protected function buildExportPath(ExportConfig $config)
     {
-        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . (new $this->config['export']['pathStrategy'](['config' => $config]))->getPath($config);
+        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . (new $this->config['export']['pathStrategy'])->getPath($config);
     }
 
     abstract function exportExcel(ExportConfig $config): string;
