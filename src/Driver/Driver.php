@@ -75,7 +75,7 @@ abstract class Driver implements DriverInterface
     public function export(ExportConfig $config): ExportData
     {
         try {
-            $this->formatConfig($config);
+            $config = $this->formatConfig($config);
 
             $exportData = new ExportData(['config' => $config]);
 
