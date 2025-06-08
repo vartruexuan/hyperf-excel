@@ -37,12 +37,15 @@ class Progress implements ProgressInterface
     /**
      * 获取进度记录
      *
-     * @param string $token
+     * @param BaseConfig $config
      * @return ProgressRecord
      */
-    public function getRecord(string $token): ProgressRecord
+    public function getRecord(BaseConfig $config): ProgressRecord
     {
-        return $this->get($token);
+        if (!$record = $this->get($config->getToken())) {
+            $record = $this->initRecord($config);
+        }
+        return $record;
     }
 
     /**
@@ -55,7 +58,7 @@ class Progress implements ProgressInterface
      */
     public function setSheetProgress(BaseConfig $config, string $sheetName, ProgressData $progressData): ProgressData
     {
-        $progressRecord = $this->getRecord($config->getToken());
+        $progressRecord = $this->getRecord($config);
         $sheetProgress = $progressRecord->getProgressBySheet($sheetName);
         $sheetProgress->status = $progressData->status;
         if ($progressData->total > 0) {
@@ -86,7 +89,7 @@ class Progress implements ProgressInterface
 
     public function setProgress(BaseConfig $config, ProgressData $progressData, BaseObject $data = null): ProgressRecord
     {
-        $progressRecord = $this->getRecord($config->getToken());
+        $progressRecord = $this->getRecord($config);
         $progressRecord->progress->status = $progressData->status;
         if ($progressData->total > 0) {
             $progressRecord->progress->total = $progressData->total;
@@ -151,7 +154,9 @@ class Progress implements ProgressInterface
     protected function get(string $token): ?ProgressRecord
     {
         $record = $this->driver->redis->get($this->getProgressKey($token));
-
+        if (!$record) {
+            return null;
+        }
         return $this->driver->packer->unpack($record);
     }
 
