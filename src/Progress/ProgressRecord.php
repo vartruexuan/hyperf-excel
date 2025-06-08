@@ -27,9 +27,8 @@ class ProgressRecord extends BaseObject
     /**
      * 数据
      *
-     * @var BaseObject
      */
-    public BaseObject $data;
+    public  $data;
 
     /**
      * 获取页码进度
