@@ -11,6 +11,7 @@ use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Event\Error;
+use function Hyperf\Support\make;
 
 abstract class BaseJob extends Job
 {
