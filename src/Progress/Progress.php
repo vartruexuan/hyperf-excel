@@ -49,6 +49,17 @@ class Progress implements ProgressInterface
     }
 
     /**
+     * 获取进度记录<token>
+     *
+     * @param string $token
+     * @return ProgressRecord|null
+     */
+    public function getRecordByToken(string $token): ?ProgressRecord
+    {
+        return $this->get($token);
+    }
+
+    /**
      * 设置页面进度
      *
      * @param BaseConfig $config
