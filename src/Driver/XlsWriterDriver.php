@@ -25,9 +25,9 @@ class XlsWriterDriver extends Driver
 {
     public Excel $excel;
 
-    public function __construct(protected ContainerInterface $container, protected array $config)
+    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
-        parent::__construct($container, $config);
+        parent::__construct($container, $config, $name);
         $this->excel = new Excel([
             'path' => Helper::getTempDir(),
         ]);

@@ -46,8 +46,6 @@ use function Hyperf\Support\make;
 
 abstract class Driver implements DriverInterface
 {
-    public string $name = 'default';
-
     public EventDispatcherInterface $event;
     public Redis $redis;
     public Filesystem $filesystem;
@@ -58,7 +56,7 @@ abstract class Driver implements DriverInterface
 
     public Progress $progress;
 
-    public function __construct(protected ContainerInterface $container, protected array $config)
+    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
         $this->event = $container->get(EventDispatcherInterface::class);
         $this->redis = $this->container->get(RedisFactory::class)->get($this->config['redis']['pool'] ?? 'default');
