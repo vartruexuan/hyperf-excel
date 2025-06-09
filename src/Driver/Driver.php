@@ -77,6 +77,8 @@ abstract class Driver implements DriverInterface
 
             $exportData = new ExportData(['token' => $config->getToken()]);
 
+            $this->event->dispatch(new BeforeExport($config, $this));
+
             if ($config->getIsAsync()) {
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
                     throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
@@ -84,8 +86,6 @@ abstract class Driver implements DriverInterface
                 $this->pushQueue(new $this->config['queue']['jobs']['export']($this->name, $config));
                 return $exportData;
             }
-
-            $this->event->dispatch(new BeforeExport($config, $this));
 
             $path = $this->exportExcel($config);
 
@@ -111,11 +111,12 @@ abstract class Driver implements DriverInterface
         try {
             $importData = new ImportData(['token' => $config->getToken()]);
 
+            $this->event->dispatch(new BeforeImport($config, $this));
+
             if ($config->getIsAsync()) {
                 $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));
                 return $importData;
             }
-            $this->event->dispatch(new BeforeImport($config, $this));
             $config->setTempPath($this->fileToTemp($config->getPath()));
 
             $this->importExcel($config);

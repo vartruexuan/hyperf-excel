@@ -35,9 +35,9 @@ php bin/hyperf.php vendor:publish vartruexuan/hyperf-excel
 declare(strict_types=1);
 
 return [
-    'default' => 'default',
+    'default' => 'xlswriter',
     'drivers' => [
-        'default' => [
+        'xlswriter' => [
             'driver' => \Vartruexuan\HyperfExcel\Driver\XlsWriterDriver::class,
             // redis 配置
             'redis' => [
@@ -66,7 +66,7 @@ return [
             // 进度处理
             'progress' => [
                 'enabled' => true,
-                'prefix' => 'HyperfExcel',
+                'prefix' => 'HyperfExcel', // 缓存key前缀
                 'expire' => 3600, // 数据失效时间
             ]
         ]
