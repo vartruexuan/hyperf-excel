@@ -91,7 +91,7 @@ abstract class Driver implements DriverInterface
 
             $path = $this->exportExcel($config);
 
-            $this->exportOutPut($config, $path);
+            $exportData->response = $this->exportOutPut($config, $path);
 
             $this->event->dispatch(new AfterExport($config, $this, $exportData));
 
@@ -213,7 +213,7 @@ abstract class Driver implements DriverInterface
      *
      * @return mixed|null
      */
-    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row,int $rowIndex)
+    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row, int $rowIndex)
     {
         $importRowCallbackParam = new ImportRowCallbackParam([
             'excel' => $this,
