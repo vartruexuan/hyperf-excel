@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
+use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
 use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
@@ -135,7 +136,16 @@ class ProgressListener extends BaseListener
 
     function afterImport(object $event)
     {
-        // TODO: Implement afterImport() method.
+        /**
+         * @var AfterImport $event
+         */
+        $record = $event->driver->progress->getRecord($event->config);
+
+        $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
+        $data = $event->data ?: $record->data;
+        $event->driver->progress->setProgress($event->config, new ProgressData([
+            'status' => $status,
+        ]), $data);
     }
 
     function afterImportData(object $event)
