@@ -24,7 +24,7 @@ class ExportData extends BaseObject
     {
         return [
             'response' => is_string($this->response) ? $this->response : '',
-            //'config' => $this->config,
+            'config' => $this->config,
         ];
     }
 
