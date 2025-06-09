@@ -77,7 +77,7 @@ abstract class Driver implements DriverInterface
         try {
             $config = $this->formatConfig($config);
 
-            $exportData = new ExportData(['config' => $config]);
+            $exportData = new ExportData(['token' => $config->getToken()]);
 
             if ($config->getIsAsync()) {
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
@@ -111,7 +111,7 @@ abstract class Driver implements DriverInterface
         $config = $this->formatConfig($config);
 
         try {
-            $importData = new ImportData(['config' => $config]);
+            $importData = new ImportData(['token' => $config->getToken()]);
 
             if ($config->getIsAsync()) {
                 $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));

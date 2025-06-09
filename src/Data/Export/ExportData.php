@@ -11,7 +11,8 @@ class ExportData extends BaseObject
 {
     public ResponseInterface|string $response;
 
-    public ExportConfig $config;
+    public string $token = '';
+
     /**
      * @return ResponseInterface|string
      */
@@ -24,7 +25,7 @@ class ExportData extends BaseObject
     {
         return [
             'response' => is_string($this->response) ? $this->response : '',
-            'config' => $this->config,
+            'token' => $this->token,
         ];
     }
 
