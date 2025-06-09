@@ -32,4 +32,11 @@ class ImportRowCallbackParam extends BaseObject
      */
     public array $row;
 
+    /**
+     * 行下标
+     *
+     * @var int
+     */
+    public int $rowIndex;
+
 }

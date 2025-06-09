@@ -213,13 +213,14 @@ abstract class Driver implements DriverInterface
      *
      * @return mixed|null
      */
-    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row)
+    protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row,int $rowIndex)
     {
         $importRowCallbackParam = new ImportRowCallbackParam([
             'excel' => $this,
             'sheet' => $sheet,
             'config' => $config,
             'row' => $row,
+            'rowIndex' => $rowIndex,
         ]);
 
         $this->event->dispatch(new BeforeImportData($config, $this, $importRowCallbackParam));

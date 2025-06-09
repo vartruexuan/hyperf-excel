@@ -185,16 +185,18 @@ class XlsWriterDriver extends Driver
         }
 
         if ($sheet->callback || $header) {
+            $rowIndex = 0;
             if ($sheet->isReturnSheetData) {
                 // 返回全量数据
                 $sheetData = $this->excel->getSheetData();
                 foreach ($sheetData as $row) {
-                    $this->rowCallback($config, $sheet, $row, $header);
+
+                    $this->rowCallback($config, $sheet, $row, $header, ++$rowIndex);
                 }
             } else {
                 // 执行回调
                 while (null !== $row = $this->excel->nextRow()) {
-                    $this->rowCallback($config, $sheet, $row, $header);
+                    $this->rowCallback($config, $sheet, $row, $header, ++$rowIndex);
                 }
             }
         }
@@ -212,14 +214,14 @@ class XlsWriterDriver extends Driver
      * @param null $header
      * @return void
      */
-    protected function rowCallback(ImportConfig $config, ImportSheet $sheet, $row, $header = null)
+    protected function rowCallback(ImportConfig $config, ImportSheet $sheet, $row, $header = null, int $rowIndex = 0)
     {
         if ($header) {
             $row = $sheet->formatRowByHeader($row, $header);
         }
         // 执行回调
         if (is_callable($sheet->callback)) {
-            $this->importRowCallback($sheet->callback, $config, $sheet, $row);
+            $this->importRowCallback($sheet->callback, $config, $sheet, $row, $rowIndex);
         }
     }
 
