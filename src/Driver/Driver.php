@@ -259,7 +259,15 @@ abstract class Driver implements DriverInterface
             // 直接输出
             case ExportConfig::OUT_PUT_TYPE_OUT:
                 $response = $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class);
-                return $response->download($filePath, $fileName);
+                $resp = $response->download($filePath, $fileName);
+                $resp->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                $resp->setHeader('Content-Disposition', 'attachment;filename="' . rawurlencode($fileName) . '"');
+                $resp->setHeader('Content-Length', filesize($filePath));
+                $resp->setHeader('Content-Transfer-Encoding', 'binary');
+                $resp->setHeader('Cache-Control', 'must-revalidate');
+                $resp->setHeader('Cache-Control', 'max-age=0');
+                $resp->setHeader('Pragma', 'public');
+                return $resp;
             default:
                 throw new ExcelException('outPutType error');
         }
