@@ -28,7 +28,7 @@ class DriverFactory
         $config = $container->get(ConfigInterface::class);
 
 
-        $this->configs = $config->get('excel', []);
+        $this->configs = $config->get('excel.drivers', []);
 
         foreach ($this->configs as $key => $item) {
             $driverClass = $item['driver'];

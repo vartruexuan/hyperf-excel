@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 namespace Vartruexuan\HyperfExcel;
 
+use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
 
 class ConfigProvider
@@ -19,6 +20,7 @@ class ConfigProvider
     {
         return [
             'dependencies' => [
+                DriverInterface::class => ExcelInvoker::class,
             ],
             'commands' => [
             ],
