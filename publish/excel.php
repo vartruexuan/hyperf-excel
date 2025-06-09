@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 return [
-    'default' => 'default',
+    'default' => 'xlswriter',
     'drivers' => [
-        'default' => [
+        'xlswriter' => [
             'driver' => \Vartruexuan\HyperfExcel\Driver\XlsWriterDriver::class,
             // redis 配置
             'redis' => [

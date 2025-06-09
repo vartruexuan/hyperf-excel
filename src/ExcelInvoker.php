@@ -11,7 +11,7 @@ class ExcelInvoker
     public function __invoke(ContainerInterface $container)
     {
         $config = $container->get(ConfigInterface::class);
-        $name = $config->get('excel.default', 'default');
+        $name = $config->get('excel.default', 'xlswriter');
         $factory = $container->get(DriverFactory::class);
         return $factory->get($name);
     }
