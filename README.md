@@ -74,7 +74,31 @@ return [
 ];
 ```
 # 使用
-## config
+### api
+```php
+use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+use Vartruexuan\HyperfExcel\Driver\DriverFactory;
+use \Vartruexuan\HyperfExcel\Data\Export\ExportData;
+use \Vartruexuan\HyperfExcel\Data\Import\ImportData;
+use \Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
+use \Vartruexuan\HyperfExcel\Data\Export\ImportConfig
+
+$excel = ApplicationContext::getContainer()->get(DriverInterface::class);
+// 工厂类方式
+// $excel = ApplicationContext::getContainer()->get(DriverFactory::class)->get('xlswriter');
+
+// 导出
+$excel->export(ExportConfig $config):ExportData;
+// 导入
+$excel->import(ImportConfig $config):ImportData;
+// 进度信息
+$excel->progress->getRecordByToken($token);
+// 进度消息
+$excel->progress->popMessage($token);
+```
+
+### 导入导出config类配置
+#### config
 - 导出
 ```php
 <?php
@@ -177,6 +201,14 @@ class UserImportConfig extends AbstractImportConfig
 {
     public string $serviceName = '用户';
 
+    /**
+     * 是否异步
+     *   true 则会推入队列之中  
+     *
+     * @var bool
+     */
+    public bool $isAsync = true;
+    
     public function getSheets(): array
     {
         $this->setSheets([
@@ -216,16 +248,138 @@ class UserImportConfig extends AbstractImportConfig
                 // ...
             }
         } catch (\Throwable $throwable) {
-            // 异常信息将会推入进度消息中 <组件会自动处理>
+            // 异常信息将会推入进度消息中 <组件进度监听器会自动处理>
             // $param->driver->progress->pushMessage($param->config->getToken(),'也可以主动推送一些信息');
             throw new BusinessException(ResultCode::FAIL, '第' . $param->rowIndex . '行:' . $throwable->getMessage());
         }
     }
 }
 ```
-## 使用
-
+### 业务方式使用
+- 业务config映射关系配置 `config->autoload->excel_business.php`
 ```php
+
+<?php
+
+declare(strict_types=1);
+
+return [
+    // 导出配置
+    'export' => [
+        // 用户导出
+        'userExport' => [
+            'config' => \App\Excel\Export\UserExportConfig::class,
+        ],
+    ],
+    // 导入配置
+    'import' => [
+        // 用户导入
+        'userImport' => [
+            'config' => \App\Excel\Import\UserImportConfig::class,
+            // 基础信息
+            'info' => [
+                // 模版地址
+                'templateUrl' => 'https://oss-xxx.com/template/用户导入模版.xlsx',
+            ],
+        ],
+    ],
+];
+
+```
+- 导出、导入、进度查询、消息查询 <大多数代码会写到业务层,为了体现文档,都提到控制器中>
+```php
+
+<?php
+
+namespace App\Http\Admin\Controller;
+
+use App\Http\Admin\Request\ExcelRequest;
+use App\Kernel\Http\AbstractController;
+use App\Service\ExcelLogService;
+use Hyperf\Di\Annotation\Inject;
+use Psr\Http\Message\ResponseInterface;
+use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+
+class ExcelController extends AbstractController
+{
+    #[Inject]
+    public DriverInterface $excel;
+   
+    // 导出
+    public function export(ExcelRequest $request)
+    {
+        // 参数校验
+        $request->scene('export')->validateResolved();
+        
+        if (! $config = config('excel_business.export.'.$request->input('businessId'])) {
+            throw new BusinessException(ResultCode::FAIL, '对应业务ID不存在');
+        }
+        $config = new $config['config']([
+            'params' => $request->input('param'), // 筛选条件或额外参数
+        ]);
+        $data = $this->excel->export($config);
+        
+        // 直接输出
+        if($result['response'] instanceof ResponseInterface){
+            return $result['response'];
+        }
+        return return $this->response->success([
+            'token' => $data->token,
+            'response' => $data->getResponse(), // 同步上传时可直接获取到地址
+        ]);
+    }
+
+    // 导入
+    public function import(ExcelRequest $request)
+    {
+        $request->scene('import')->validateResolved();
+        
+        if (! $config = config('excel_business.import.'.$request->input('businessId'])) {
+            throw new BusinessException(ResultCode::FAIL, '对应业务ID不存在');
+        }
+        $importConfig = new $config['config'](['path' => $request->input('url')]);
+        $data = $this->excel->import($importConfig);
+       
+        
+        return $this->response->success([
+            'token' => $data->token,
+        ]);
+    }
+
+    // 查询进度
+    public function progress(ExcelRequest $request)
+    {
+        $request->scene('progress')->validateResolved();
+        
+        // 获取进度记录
+        $record = $this->excel->progress->getRecordByToken($request->input('token']))?->toArray();
+        if (!$record) {
+            throw  new BusinessException(ResultCode::FAIL, '对应记录不存在');
+        }
+        return $this->response->success($record);
+    }
+
+    // 查询消息
+    public function message(ExcelRequest $request)
+    {
+        $request->scene('message')->validateResolved();
+    
+        $record = $this->getProgressByToken($token);
+        $message = $this->excel->progress->popMessage($token);
+
+        if (!$record) {
+            throw  new BusinessException(ResultCode::FAIL, '对应记录不存在');
+        }    
+        return $this->response->success([
+            // 是否结束
+            'isEnd' => in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]),
+            // 消息集合
+            'message' => $message
+        ]);
+    }
+
+}
+
 
 
 
@@ -233,9 +387,164 @@ class UserImportConfig extends AbstractImportConfig
 
 ```
 
+# 监听器 
+## 组件已实现监听器
+- 日志输出监听器: `Vartruexuan\HyperfExcel\Listener\ExcelLogListener`
+- 自定义监听器,需实现 `Vartruexuan\HyperfExcel\Listener\BaseListener`
+- demo:实现一个自定义监听器,记录导入导出到数据库中
+监听器
+```php
 
+<?php
 
+namespace App\Listener;
 
+use App\Exception\BusinessException;
+use App\Kernel\Http\ResultCode;
+use App\Service\ExcelLogService;
+use Hyperf\Di\Annotation\Inject;
+use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
+use Vartruexuan\HyperfExcel\Event\AfterImport;
+use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
+use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeImport;
+use Vartruexuan\HyperfExcel\Listener\BaseListener;
+use Vartruexuan\HyperfExcel\Event\Error;
+
+class ExcelLogListener extends BaseListener
+{
+    #[inject]
+    public ExcelLogService $excelLogService;
+    
+    function beforeExport(object $event)
+    {
+        $this->excelLogService->saveLog($event->config);
+    }
+
+    function beforeExportExcel(object $event)
+    {
+        // TODO: Implement beforeExportExcel() method.
+    }
+
+    function beforeExportData(object $event)
+    {
+        // TODO: Implement beforeExportData() method.
+    }
+
+    function beforeExportSheet(object $event)
+    {
+        // TODO: Implement beforeExportSheet() method.
+    }
+
+    function afterExport(object $event)
+    {
+        /**
+         * @var AfterExport $event
+         */
+        $this->excelLogService->saveLog($event->config));
+    }
+
+    function afterExportData(object $event)
+    {
+        // TODO: Implement afterExportData() method.
+    }
+
+    function afterExportExcel(object $event)
+    {
+        // TODO: Implement afterExportExcel() method.
+    }
+
+    function afterExportSheet(object $event)
+    {
+        /**
+         * @var AfterExportSheet $event
+         */
+        $this->excelLogService->saveLog($event->config));
+    }
+
+    function beforeImport(object $event)
+    {
+        /**
+         * @var BeforeImport $event
+         */
+        $this->excelLogService->saveLog($event->config));
+    }
+
+    function beforeImportExcel(object $event)
+    {
+        // TODO: Implement beforeImportExcel() method.
+    }
+
+    function beforeImportData(object $event)
+    {
+        // TODO: Implement beforeImportData() method.
+    }
+
+    function beforeImportSheet(object $event)
+    {
+        // TODO: Implement beforeImportSheet() method.
+    }
+
+    function afterImport(object $event)
+    {
+        /**
+         * @var AfterImport $event
+         */
+        $this->excelLogService->saveLog($event->config))
+    }
+
+    function afterImportData(object $event)
+    {
+        // TODO: Implement afterImportData() method.
+    }
+
+    function afterImportExcel(object $event)
+    {
+        // TODO: Implement afterImportExcel() method.
+    }
+
+    function afterImportSheet(object $event)
+    {
+        /**
+         * @var AfterImportSheet $event
+         */
+       !$this->excelLogService->saveLog($event->config));
+    }
+
+    function error(object $event)
+    {
+        /**
+         * @var Error $event
+         */
+        $this->excelLogService->saveLog($event->config,[
+            'remark' => $event->exception->getMessage(),
+        ]));
+    }
+}
+
+```
+sql
+```sql
+CREATE TABLE `excel_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `token` varchar(64) NOT NULL DEFAULT '',
+  `type` enum('export','import') NOT NULL DEFAULT 'export' COMMENT '类型:export导出import导入',
+  `config_class` varchar(250) NOT NULL DEFAULT '',
+  `config` json DEFAULT NULL COMMENT 'config信息',
+  `service_name` varchar(20) NOT NULL DEFAULT '' COMMENT '服务名',
+  `sheet_progress` json DEFAULT NULL COMMENT '页码进度',
+  `progress` json DEFAULT NULL COMMENT '总进度信息',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '状态:1.待处理2.正在处理3.处理完成4.处理失败',
+  `data` json NOT NULL COMMENT '数据信息',
+  `remark` varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
+  `url` varchar(300) NOT NULL DEFAULT '' COMMENT 'url地址',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_token` (`token`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='导入导出日志';
+```
 ## License
 
 MIT

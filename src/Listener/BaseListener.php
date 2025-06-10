@@ -12,7 +12,6 @@ use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Logger\LoggerFactory;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterExportExcel;

@@ -9,7 +9,7 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
 
 class ExportData extends BaseObject
 {
-    public ResponseInterface|string $response;
+    public ResponseInterface|string $response = '';
 
     public string $token = '';
 

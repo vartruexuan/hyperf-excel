@@ -43,7 +43,6 @@ use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use function Hyperf\Support\make;
 
-
 abstract class Driver implements DriverInterface
 {
     public EventDispatcherInterface $event;

@@ -6,7 +6,6 @@ use Hyperf\Contract\Arrayable;
 
 class BaseObject implements Arrayable
 {
-
     public function __construct(array $config = [])
     {
         // 初始化

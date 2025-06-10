@@ -125,7 +125,6 @@ class Sheet extends BaseObject
         }, $this->getColumns());
     }
 
-
     /**
      * 格式行数据
      *

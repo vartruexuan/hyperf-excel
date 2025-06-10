@@ -2,7 +2,6 @@
 
 namespace Vartruexuan\HyperfExcel\Progress;
 
-
 use Vartruexuan\HyperfExcel\Data\BaseObject;
 
 /**
