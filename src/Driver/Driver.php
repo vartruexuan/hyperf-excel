@@ -184,7 +184,7 @@ abstract class Driver implements DriverInterface
     {
         $exportCallbackParam = new ExportCallbackParam([
             'driver' => $this,
-            'exportConfig' => $config,
+            'config' => $config,
             'sheet' => $sheet,
 
             'page' => $page,

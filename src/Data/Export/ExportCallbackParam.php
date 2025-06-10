@@ -11,7 +11,7 @@ class ExportCallbackParam extends BaseObject
 {
     public Driver $driver;
 
-    public ExportConfig $exportConfig;
+    public ExportConfig $config;
 
     public Sheet $sheet;
 
