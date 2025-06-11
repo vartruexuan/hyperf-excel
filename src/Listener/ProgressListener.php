@@ -178,7 +178,7 @@ class ProgressListener extends BaseListener
         $record = $event->driver->progress->getRecord($event->config);
         $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_END,
-            'total' => $record->sheetListProgress[$event->importCallbackParam->sheet->name]?->progress,
+            'total' => $record->sheetListProgress[$event->sheet->name]?->progress,
         ]));
     }
 
