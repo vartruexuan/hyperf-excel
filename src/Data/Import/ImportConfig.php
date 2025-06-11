@@ -10,6 +10,12 @@ class ImportConfig extends BaseConfig
 {
 
     /**
+     * 是否直接返回sheet数据
+     *
+     * @var bool
+     */
+    public bool $isReturnSheetData = false;
+    /**
      * 导入地址
      *
      * @var string

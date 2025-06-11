@@ -12,4 +12,11 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
 class ImportData extends BaseObject
 {
     public string $token = '';
+
+    /**
+     * 页码数据
+     *
+     * @var array
+     */
+    public array $sheetData = [];
 }

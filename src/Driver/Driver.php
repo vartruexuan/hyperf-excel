@@ -108,17 +108,21 @@ abstract class Driver implements DriverInterface
         $config = $this->formatConfig($config);
 
         try {
+
             $importData = new ImportData(['token' => $config->getToken()]);
 
             $this->event->dispatch(new BeforeImport($config, $this));
 
             if ($config->getIsAsync()) {
+                if ($config->isReturnSheetData) {
+                    throw new ExcelException('Asynchronous does not support returning sheet data');
+                }
                 $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));
                 return $importData;
             }
             $config->setTempPath($this->fileToTemp($config->getPath()));
 
-            $this->importExcel($config);
+            $importData->sheetData = $this->importExcel($config);
 
             // 删除临时文件
             Helper::deleteFile($config->getTempPath());
@@ -321,5 +325,5 @@ abstract class Driver implements DriverInterface
 
     abstract function exportExcel(ExportConfig $config): string;
 
-    abstract function importExcel(ImportConfig $config);
+    abstract function importExcel(ImportConfig $config): array|null;
 }

@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
+use Vartruexuan\HyperfExcel\Data\Import\Sheet;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Event\AfterExportExcel;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
@@ -62,9 +63,10 @@ class XlsWriterDriver extends Driver
      * import
      *
      * @param ImportConfig $config
+     * @return array|null
      * @throws ExcelException
      */
-    public function importExcel(ImportConfig $config)
+    public function importExcel(ImportConfig $config): array|null
     {
         $filePath = $config->getTempPath();
         $fileName = basename($filePath);
@@ -72,35 +74,35 @@ class XlsWriterDriver extends Driver
         // 校验文件
         $this->checkFile($filePath);
 
+        /**
+         * @var Sheet[] $sheets
+         */
+        $sheets = $config->getSheets();
         $this->excel->openFile($fileName);
 
         $sheetList = $this->excel->sheetList();
-        $sheetNames = [];
-
-        $sheets = array_map(function ($sheet) use (&$sheetNames, $sheetList) {
-            $sheetName = $sheet->name;
-            if ($sheet->readType == ImportSheet::SHEET_READ_TYPE_INDEX) {
-                $sheetName = $sheetList[$sheet->index];
-                $sheet->name = $sheetName;
-            }
-            $sheetNames[] = $sheetName;
-            return $sheet;
-        }, array_values($config->getSheets()));
 
         $this->event->dispatch(new BeforeImportExcel($config, $this));
 
+        $sheetData = [];
         /**
          * 页配置
          *
          * @var Sheet $sheet
          */
         foreach ($sheets as $sheet) {
-            $this->importSheet($sheet, $config);
+            if ($sheet->readType == ImportSheet::SHEET_READ_TYPE_INDEX) {
+                $sheetName = $sheetList[$sheet->index];
+                $sheet->name = $sheetName;
+            }
+            $sheetData[$sheet->name] = $this->importSheet($sheet, $config);
         }
 
         $this->excel->close();
 
         $this->event->dispatch(new AfterImportExcel($config, $this));
+
+        return $sheetData;
     }
 
 
@@ -163,9 +165,9 @@ class XlsWriterDriver extends Driver
      *
      * @param ImportSheet $sheet
      * @param ImportConfig $config
-     * @return void
+     * @return array
      */
-    protected function importSheet(ImportSheet $sheet, ImportConfig $config)
+    protected function importSheet(ImportSheet $sheet, ImportConfig $config): array|null
     {
         $sheetName = $sheet->name;
 
@@ -174,6 +176,7 @@ class XlsWriterDriver extends Driver
         $this->excel->openSheet($sheetName);
 
         $header = [];
+        $sheetData = [];
 
         if ($sheet->isSetHeader) {
             if ($sheet->headerIndex > 1) {
@@ -186,13 +189,9 @@ class XlsWriterDriver extends Driver
 
         if ($sheet->callback || $header) {
             $rowIndex = 0;
-            if ($sheet->isReturnSheetData) {
+            if ($config->isReturnSheetData) {
                 // 返回全量数据
                 $sheetData = $this->excel->getSheetData();
-                foreach ($sheetData as $row) {
-
-                    $this->rowCallback($config, $sheet, $row, $header, ++$rowIndex);
-                }
             } else {
                 // 执行回调
                 while (null !== $row = $this->excel->nextRow()) {
@@ -202,6 +201,8 @@ class XlsWriterDriver extends Driver
         }
 
         $this->event->dispatch(new AfterImportSheet($config, $this, $sheet));
+
+        return $sheetData;
     }
 
 
