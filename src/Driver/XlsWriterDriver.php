@@ -39,10 +39,11 @@ class XlsWriterDriver extends Driver
      *
      * @param ExportConfig $config
      * @return string
+     * @throws ExcelException
      */
     public function exportExcel(ExportConfig $config): string
     {
-        $filePath = Helper::getTempFileName('ex_');
+        $filePath = $this->getTempFileName();
         $fileName = basename($filePath);
         $this->excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
 

@@ -152,7 +152,7 @@ abstract class Driver implements DriverInterface
      */
     protected function fileToTemp($path)
     {
-        $filePath = Helper::getTempFileName();
+        $filePath = $this->getTempFileName();
 
         if (!Helper::isUrl($path)) {
             // 本地文件
@@ -171,6 +171,25 @@ abstract class Driver implements DriverInterface
         return $filePath;
     }
 
+    /**
+     * 获取临时
+     *
+     * @return false|string
+     * @throws ExcelException
+     */
+    protected function getTempFileName()
+    {
+        $dir = Helper::getTempDir() . DIRECTORY_SEPARATOR . 'hyperf-excel';
+        if (!is_dir($dir)) {
+            if (!mkdir($dir, 0777, true)) {
+                throw new ExcelException('构建临时目录失败');
+            }
+        }
+        if (!$filePath = Helper::getTempFileName($dir, 'ex_')) {
+            throw new ExcelException('构建临时文件失败');
+        }
+        return $filePath;
+    }
 
     /**
      * 导出数据回调
@@ -255,6 +274,7 @@ abstract class Driver implements DriverInterface
             // 上传
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
                 $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                Helper::deleteFile($filePath);
                 if (!$this->filesystem->fileExists($path)) {
                     throw new ExcelException('File upload failed');
                 }
@@ -263,6 +283,7 @@ abstract class Driver implements DriverInterface
             case ExportConfig::OUT_PUT_TYPE_OUT:
                 $response = $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class);
                 $resp = $response->download($filePath, $fileName);
+                Helper::deleteFile($filePath);
                 $resp->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                 $resp->setHeader('Content-Disposition', 'attachment;filename="' . rawurlencode($fileName) . '"');
                 $resp->setHeader('Content-Length', filesize($filePath));

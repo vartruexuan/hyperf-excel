@@ -55,12 +55,13 @@ class Helper
     /**
      * 申请临时文件
      *
-     * @param $prefix
+     * @param string $prefix
+     * @param string $dir
      * @return false|string
      */
-    public static function getTempFileName($prefix = 'ex_')
+    public static function getTempFileName(string $dir, string $prefix = ''): false|string
     {
-        return tempnam(static::getTempDir(), $prefix);
+        return tempnam($dir, $prefix);
     }
 
     /**
