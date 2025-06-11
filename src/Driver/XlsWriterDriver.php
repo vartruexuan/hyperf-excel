@@ -30,7 +30,7 @@ class XlsWriterDriver extends Driver
     {
         parent::__construct($container, $config, $name);
         $this->excel = new Excel([
-            'path' => Helper::getTempDir(),
+            'path' => $this->getTempDir(),
         ]);
     }
 

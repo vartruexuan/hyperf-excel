@@ -172,12 +172,26 @@ abstract class Driver implements DriverInterface
     }
 
     /**
-     * 获取临时
+     * 获取临时文件
      *
      * @return false|string
      * @throws ExcelException
      */
     protected function getTempFileName()
+    {
+        if (!$filePath = Helper::getTempFileName($this->getTempDir(), 'ex_')) {
+            throw new ExcelException('构建临时文件失败');
+        }
+        return $filePath;
+    }
+
+    /**
+     * 获取临时目录
+     *
+     * @return string
+     * @throws ExcelException
+     */
+    protected function getTempDir()
     {
         $dir = Helper::getTempDir() . DIRECTORY_SEPARATOR . 'hyperf-excel';
         if (!is_dir($dir)) {
@@ -185,10 +199,7 @@ abstract class Driver implements DriverInterface
                 throw new ExcelException('构建临时目录失败');
             }
         }
-        if (!$filePath = Helper::getTempFileName($dir, 'ex_')) {
-            throw new ExcelException('构建临时文件失败');
-        }
-        return $filePath;
+        return $dir;
     }
 
     /**
