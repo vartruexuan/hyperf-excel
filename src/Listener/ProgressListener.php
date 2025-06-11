@@ -158,6 +158,7 @@ class ProgressListener extends BaseListener
             'progress' => 1,
             'success' => $event->exception ? 0 : 1,
             'fail' => $event->exception ? 1 : 0,
+
         ]));
         if ($event->exception) {
             $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
@@ -174,11 +175,12 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterImportSheet $event
          */
+        $record = $event->driver->progress->getRecord($event->config);
         $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_END,
+            'total' => $record->sheetListProgress[$event->importCallbackParam->sheet->name]?->progress,
         ]));
     }
-
 
     function error(object $event)
     {
