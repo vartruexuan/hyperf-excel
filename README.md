@@ -22,6 +22,7 @@ pecl install xlswriter
 - 依赖组件包 <项目中安装,构建配置>
   - 上传文件 [hyperf/filesystem](https://hyperf.wiki/3.1/#/zh-cn/filesystem?id=%e5%ae%89%e8%a3%85)
   - 异步队列 [hyperf/async-queue](https://hyperf.wiki/3.1/#/zh-cn/async-queue?id=%e5%bc%82%e6%ad%a5%e9%98%9f%e5%88%97)
+  - 日志输出 [hyperf/logger](https://hyperf.wiki/3.1/#/zh-cn/logger?id=%e6%97%a5%e5%bf%97)
 - 安装组件
 ```shell
 composer require vartruexuan/hyperf-excel
