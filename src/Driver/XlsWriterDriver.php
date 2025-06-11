@@ -184,7 +184,7 @@ class XlsWriterDriver extends Driver
                 $this->excel->setSkipRows($sheet->headerIndex - 1);
             }
             $header = $this->excel->nextRow();
-            $header = $sheet->getHeader($header);
+            $header = $sheet->getHeader($header ?? []);
         }
 
         if ($sheet->callback || $header) {
