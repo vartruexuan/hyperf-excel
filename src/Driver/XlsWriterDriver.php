@@ -192,6 +192,9 @@ class XlsWriterDriver extends Driver
             if ($config->isReturnSheetData) {
                 // 返回全量数据
                 $sheetData = $this->excel->getSheetData();
+                if ($sheet->isSetHeader) {
+                    $sheetData = $sheet->formatSheetDataByHeader($sheetData, $header);
+                }
             } else {
                 // 执行回调
                 while (null !== $row = $this->excel->nextRow()) {
