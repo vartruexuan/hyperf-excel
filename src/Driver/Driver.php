@@ -38,7 +38,6 @@ use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
-
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use function Hyperf\Support\make;
@@ -284,12 +283,17 @@ abstract class Driver implements DriverInterface
         switch ($config->outPutType) {
             // 上传
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
-                $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                //todo oss MissingContentLength: You must provide the Content-Length HTTP header.
+                //todo oss PositionNotEqualToLength: Position is not equal to file length
+                //$this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                //todo 临时处理
+                $this->filesystem->write($path, file_get_contents($filePath));
                 Helper::deleteFile($filePath);
                 if (!$this->filesystem->fileExists($path)) {
                     throw new ExcelException('File upload failed');
                 }
                 return $path;
+                break;
             // 直接输出
             case ExportConfig::OUT_PUT_TYPE_OUT:
                 $response = $this->container->get(\Hyperf\HttpServer\Contract\ResponseInterface::class);
@@ -303,6 +307,7 @@ abstract class Driver implements DriverInterface
                 $resp->setHeader('Pragma', 'public');
                 Helper::deleteFile($filePath);
                 return $resp;
+                break;
             default:
                 throw new ExcelException('outPutType error');
         }
