@@ -8,7 +8,6 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
-use Vartruexuan\HyperfExcel\Data\Import\Sheet;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Event\AfterExportExcel;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
@@ -24,14 +23,9 @@ use Vtiful\Kernel\Excel;
 
 class XlsWriterDriver extends Driver
 {
-    public Excel $excel;
-
     public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
         parent::__construct($container, $config, $name);
-        $this->excel = new Excel([
-            'path' => $this->getTempDir(),
-        ]);
     }
 
     /**
@@ -43,17 +37,20 @@ class XlsWriterDriver extends Driver
      */
     public function exportExcel(ExportConfig $config): string
     {
+        $excel = new Excel([
+            'path' => $this->getTempDir(),
+        ]);
         $filePath = $this->getTempFileName();
         $fileName = basename($filePath);
-        $this->excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
+        $excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
 
         $this->event->dispatch(new BeforeExportExcel($config, $this));
 
         foreach (array_values($config->getSheets()) as $index => $sheet) {
-            $this->exportSheet($sheet, $config, $index);
+            $this->exportSheet($excel, $sheet, $config, $index);
         }
 
-        $this->excel->output();
+        $excel->output();
 
         $this->event->dispatch(new AfterExportExcel($config, $this));
 
@@ -69,6 +66,10 @@ class XlsWriterDriver extends Driver
      */
     public function importExcel(ImportConfig $config): array|null
     {
+        $excel = new Excel([
+            'path' => $this->getTempDir(),
+        ]);
+
         $filePath = $config->getTempPath();
         $fileName = basename($filePath);
 
@@ -79,9 +80,9 @@ class XlsWriterDriver extends Driver
          * @var Sheet[] $sheets
          */
         $sheets = $config->getSheets();
-        $this->excel->openFile($fileName);
+        $excel->openFile($fileName);
 
-        $sheetList = $this->excel->sheetList();
+        $sheetList = $excel->sheetList();
 
         $this->event->dispatch(new BeforeImportExcel($config, $this));
 
@@ -89,17 +90,17 @@ class XlsWriterDriver extends Driver
         /**
          * 页配置
          *
-         * @var Sheet $sheet
+         * @var ImportSheet $sheet
          */
         foreach ($sheets as $sheet) {
             if ($sheet->readType == ImportSheet::SHEET_READ_TYPE_INDEX) {
                 $sheetName = $sheetList[$sheet->index];
                 $sheet->name = $sheetName;
             }
-            $sheetData[$sheet->name] = $this->importSheet($sheet, $config);
+            $sheetData[$sheet->name] = $this->importSheet($excel, $sheet, $config);
         }
 
-        $this->excel->close();
+        $excel->close();
 
         $this->event->dispatch(new AfterImportExcel($config, $this));
 
@@ -115,15 +116,15 @@ class XlsWriterDriver extends Driver
      * @param int|string $index
      * @return void
      */
-    protected function exportSheet(ExportSheet $sheet, ExportConfig $config, int|string $index)
+    protected function exportSheet(Excel $excel, ExportSheet $sheet, ExportConfig $config, int|string $index)
     {
         if ($index > 0) {
-            $this->excel->addSheet($sheet->getName());
+            $excel->addSheet($sheet->getName());
         }
 
         $this->event->dispatch(new BeforeExportSheet($config, $this, $sheet));
 
-        $this->excel->header($sheet->getHeaders());
+        $excel->header($sheet->getHeaders());
 
         $totalCount = $sheet->getCount();
         $pageSize = $sheet->getPageSize();
@@ -149,7 +150,7 @@ class XlsWriterDriver extends Driver
             $listCount = count($list ?? []);
 
             if ($list) {
-                $this->excel->data($sheet->formatList($list));
+                $excel->data($sheet->formatList($list));
             }
 
             $isEnd = !$isCallback || $totalCount <= 0 || $totalCount <= $pageSize || ($listCount < $pageSize || $pageNum <= $page);
@@ -168,13 +169,13 @@ class XlsWriterDriver extends Driver
      * @param ImportConfig $config
      * @return array
      */
-    protected function importSheet(ImportSheet $sheet, ImportConfig $config): array|null
+    protected function importSheet(Excel $excel, ImportSheet $sheet, ImportConfig $config): array|null
     {
         $sheetName = $sheet->name;
 
         $this->event->dispatch(new BeforeImportSheet($config, $this, $sheet));
 
-        $this->excel->openSheet($sheetName);
+        $excel->openSheet($sheetName);
 
         $header = [];
         $sheetData = [];
@@ -182,9 +183,9 @@ class XlsWriterDriver extends Driver
         if ($sheet->isSetHeader) {
             if ($sheet->headerIndex > 1) {
                 // 跳过指定行
-                $this->excel->setSkipRows($sheet->headerIndex - 1);
+                $excel->setSkipRows($sheet->headerIndex - 1);
             }
-            $header = $this->excel->nextRow();
+            $header = $excel->nextRow();
             $header = $sheet->getHeader($header ?? []);
         }
 
@@ -192,13 +193,13 @@ class XlsWriterDriver extends Driver
             $rowIndex = 0;
             if ($config->isReturnSheetData) {
                 // 返回全量数据
-                $sheetData = $this->excel->getSheetData();
+                $sheetData = $excel->getSheetData();
                 if ($sheet->isSetHeader) {
                     $sheetData = $sheet->formatSheetDataByHeader($sheetData, $header);
                 }
             } else {
                 // 执行回调
-                while (null !== $row = $this->excel->nextRow()) {
+                while (null !== $row = $excel->nextRow()) {
                     $this->rowCallback($config, $sheet, $row, $header, ++$rowIndex);
                 }
             }

@@ -283,11 +283,7 @@ abstract class Driver implements DriverInterface
         switch ($config->outPutType) {
             // 上传
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
-                //todo oss MissingContentLength: You must provide the Content-Length HTTP header.
-                //todo oss PositionNotEqualToLength: Position is not equal to file length
-                //$this->filesystem->writeStream($path, fopen($filePath, 'r+'));
-                //todo 临时处理
-                $this->filesystem->write($path, file_get_contents($filePath));
+                $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
                 Helper::deleteFile($filePath);
                 if (!$this->filesystem->fileExists($path)) {
                     throw new ExcelException('File upload failed');
