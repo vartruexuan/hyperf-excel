@@ -107,6 +107,7 @@ class XlsWriterDriver extends Driver
     /**
      * export sheet
      *
+     * @param Excel $excel
      * @param ExportSheet $sheet
      * @param ExportConfig $config
      * @param int|string $index
@@ -161,9 +162,10 @@ class XlsWriterDriver extends Driver
     /**
      * import sheet
      *
+     * @param Excel $excel
      * @param ImportSheet $sheet
      * @param ImportConfig $config
-     * @return array
+     * @return array|null
      */
     protected function importSheet(Excel $excel, ImportSheet $sheet, ImportConfig $config): array|null
     {
@@ -214,6 +216,7 @@ class XlsWriterDriver extends Driver
      * @param ImportSheet $sheet
      * @param $row
      * @param null $header
+     * @param int $rowIndex
      * @return void
      */
     protected function rowCallback(ImportConfig $config, ImportSheet $sheet, $row, $header = null, int $rowIndex = 0)
