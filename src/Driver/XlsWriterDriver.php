@@ -77,7 +77,7 @@ class XlsWriterDriver extends Driver
         $this->checkFile($filePath);
 
         /**
-         * @var Sheet[] $sheets
+         * @var ImportSheet[] $sheets
          */
         $sheets = $config->getSheets();
         $excel->openFile($fileName);
@@ -87,11 +87,7 @@ class XlsWriterDriver extends Driver
         $this->event->dispatch(new BeforeImportExcel($config, $this));
 
         $sheetData = [];
-        /**
-         * 页配置
-         *
-         * @var ImportSheet $sheet
-         */
+
         foreach ($sheets as $sheet) {
             if ($sheet->readType == ImportSheet::SHEET_READ_TYPE_INDEX) {
                 $sheetName = $sheetList[$sheet->index];
