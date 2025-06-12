@@ -259,138 +259,17 @@ class UserImportConfig extends AbstractImportConfig
     }
 }
 ```
-### 业务方式使用
-- 业务config映射关系配置 `config->autoload->excel_business.php`
-```php
-
-<?php
-
-declare(strict_types=1);
-
-return [
-    // 导出配置
-    'export' => [
-        // 用户导出
-        'userExport' => [
-            'config' => \App\Excel\Export\UserExportConfig::class,
-        ],
-    ],
-    // 导入配置
-    'import' => [
-        // 用户导入
-        'userImport' => [
-            'config' => \App\Excel\Import\UserImportConfig::class,
-            // 基础信息
-            'info' => [
-                // 模版地址
-                'templateUrl' => 'https://oss-xxx.com/template/用户导入模版.xlsx',
-            ],
-        ],
-    ],
-];
-
-```
-- 导出、导入、进度查询、消息查询 <大多数代码会写到业务层,为了体现文档,都提到控制器中>
-```php
-
-<?php
-
-namespace App\Http\Admin\Controller;
-
-use App\Http\Admin\Request\ExcelRequest;
-use App\Kernel\Http\AbstractController;
-use App\Service\ExcelLogService;
-use Hyperf\Di\Annotation\Inject;
-use Psr\Http\Message\ResponseInterface;
-use Vartruexuan\HyperfExcel\Driver\DriverInterface;
-
-class ExcelController extends AbstractController
-{
-    #[Inject]
-    public DriverInterface $excel;
-   
-    // 导出
-    public function export(ExcelRequest $request)
-    {
-        // 参数校验
-        $request->scene('export')->validateResolved();
-        
-        if (! $config = config('excel_business.export.'.$request->input('businessId'])) {
-            throw new BusinessException(ResultCode::FAIL, '对应业务ID不存在');
-        }
-        $config = new $config['config']([
-            'params' => $request->input('param'), // 筛选条件或额外参数
-        ]);
-        $data = $this->excel->export($config);
-        
-        // 直接输出
-        if($result['response'] instanceof ResponseInterface){
-            return $result['response'];
-        }
-        return return $this->response->success([
-            'token' => $data->token,
-            'response' => $data->getResponse(), // 同步上传时可直接获取到地址
-        ]);
-    }
-
-    // 导入
-    public function import(ExcelRequest $request)
-    {
-        $request->scene('import')->validateResolved();
-        
-        if (! $config = config('excel_business.import.'.$request->input('businessId'])) {
-            throw new BusinessException(ResultCode::FAIL, '对应业务ID不存在');
-        }
-        $importConfig = new $config['config'](['path' => $request->input('url')]);
-        $data = $this->excel->import($importConfig);
-       
-        
-        return $this->response->success([
-            'token' => $data->token,
-        ]);
-    }
-
-    // 查询进度
-    public function progress(ExcelRequest $request)
-    {
-        $request->scene('progress')->validateResolved();
-        
-        // 获取进度记录
-        $record = $this->excel->progress->getRecordByToken($request->input('token']))?->toArray();
-        if (!$record) {
-            throw  new BusinessException(ResultCode::FAIL, '对应记录不存在');
-        }
-        return $this->response->success($record);
-    }
-
-    // 查询消息
-    public function message(ExcelRequest $request)
-    {
-        $request->scene('message')->validateResolved();
-    
-        $record = $this->getProgressByToken($token);
-        $message = $this->excel->progress->popMessage($token);
-
-        if (!$record) {
-            throw  new BusinessException(ResultCode::FAIL, '对应记录不存在');
-        }    
-        return $this->response->success([
-            // 是否结束
-            'isEnd' => in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]),
-            // 消息集合
-            'message' => $message
-        ]);
-    }
-
-}
-```
-
 # 监听器 
-## 组件已实现监听器
-- 日志输出监听器: `Vartruexuan\HyperfExcel\Listener\ExcelLogListener`
-- 自定义监听器,需实现 `Vartruexuan\HyperfExcel\Listener\BaseListener`
-- demo:实现一个自定义监听器,记录导入导出到数据库中
-监听器
+## 日志监听器
+```php
+// config/autoload/listeners.php
+return [
+    Vartruexuan\HyperfExcel\Listener\ExcelLogListener::class
+];
+```
+## 自定义监听器
+- 继承`Vartruexuan\HyperfExcel\Listener\BaseListener`
+- demo:实现一个自定义监听器,记录导入导出到数据库中 监听器
 ```php
 
 <?php
@@ -507,7 +386,7 @@ class ExcelLogListener extends BaseListener
         /**
          * @var AfterImportSheet $event
          */
-       !$this->excelLogService->saveLog($event->config));
+       $this->excelLogService->saveLog($event->config));
     }
 
     function error(object $event)
