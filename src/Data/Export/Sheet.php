@@ -11,7 +11,6 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
  */
 class Sheet extends BaseObject
 {
-
     /**
      * sheet名称
      *
@@ -41,6 +40,13 @@ class Sheet extends BaseObject
     public int $pageSize = 2000;
 
     /**
+     * 页码样式
+     *
+     * @var SheetStyle
+     */
+    public SheetStyle $style;
+
+    /**
      * 数据
      *   Closure 数据回调
      *   `
@@ -56,7 +62,7 @@ class Sheet extends BaseObject
     /**
      * 额外配置
      *
-     * @var
+     * @var array
      */
     public array $options = [];
 

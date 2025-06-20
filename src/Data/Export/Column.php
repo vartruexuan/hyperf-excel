@@ -61,6 +61,13 @@ class Column extends BaseObject
     public int $width = 0;
 
     /**
+     * 样式
+     *
+     * @var Style
+     */
+    public Style $style;
+
+    /**
      * 额外配置
      *
      * @var array
