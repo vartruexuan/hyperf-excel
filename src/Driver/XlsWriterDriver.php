@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Driver;
 
 use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Data\Export\Column;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\SheetStyle;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
@@ -129,6 +130,9 @@ class XlsWriterDriver extends Driver
             $this->setSheetStyle($excel, $sheet->style);
         }
 
+        // 设置列样式
+        $this->setColumnStyle($excel, $sheet->getColumns());
+
         $totalCount = $sheet->getCount();
         $pageSize = $sheet->getPageSize();
         $data = $sheet->getData();
@@ -181,11 +185,27 @@ class XlsWriterDriver extends Driver
             $excel->zoom($style->zoom);
         }
 
-        if ($style->hide ) {
+        if ($style->hide) {
             $excel->setCurrentSheetHide();
         }
-        if ($style->isFirst ) {
+        if ($style->isFirst) {
             $excel->setCurrentSheetIsFirst();
+        }
+    }
+
+    /**
+     * 设置列样式
+     *
+     * @param Excel $excel
+     * @param Column[] $sheetColumns
+     * @return void
+     */
+    protected function setColumnStyle(Excel $excel, array $sheetColumns)
+    {
+        foreach ($sheetColumns as $key => $sheetColumn) {
+            if ($sheetColumn->style) {
+                $excel->setColumn(Excel::stringFromColumnIndex($key), $sheetColumn->width, $sheetColumn->style);
+            }
         }
     }
 

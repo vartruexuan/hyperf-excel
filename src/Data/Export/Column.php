@@ -63,9 +63,9 @@ class Column extends BaseObject
     /**
      * 样式
      *
-     * @var Style
+     * @var null|Style
      */
-    public Style $style;
+    public ?Style $style = null;
 
     /**
      * 额外配置
