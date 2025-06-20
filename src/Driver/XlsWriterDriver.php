@@ -6,6 +6,7 @@ namespace Vartruexuan\HyperfExcel\Driver;
 
 use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
+use Vartruexuan\HyperfExcel\Data\Export\SheetStyle;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
@@ -121,7 +122,12 @@ class XlsWriterDriver extends Driver
 
         $this->event->dispatch(new BeforeExportSheet($config, $this, $sheet));
 
-        $excel->header($sheet->getHeaders());
+        // $excel->header($sheet->getHeaders());
+        $excel->data($sheet->getHeaders());
+
+        if ($sheet->style) {
+            $this->setSheetStyle($excel, $sheet->style);
+        }
 
         $totalCount = $sheet->getCount();
         $pageSize = $sheet->getPageSize();
@@ -158,6 +164,30 @@ class XlsWriterDriver extends Driver
         $this->event->dispatch(new AfterExportSheet($config, $this, $sheet));
     }
 
+    /**
+     * 设置页码样式
+     *
+     * @param Excel $excel
+     * @param SheetStyle $style
+     * @return void
+     */
+    protected function setSheetStyle(Excel $excel, SheetStyle $style)
+    {
+        if ($style->gridline > 0) {
+            $excel->gridline($style->gridline);
+        }
+
+        if ($style->zoom !== null) {
+            $excel->zoom($style->zoom);
+        }
+
+        if ($style->hide ) {
+            $excel->setCurrentSheetHide();
+        }
+        if ($style->isFirst ) {
+            $excel->setCurrentSheetIsFirst();
+        }
+    }
 
     /**
      * import sheet

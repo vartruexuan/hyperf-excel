@@ -14,8 +14,8 @@ class SheetStyle extends BaseObject
     const GRIDLINES_SHOW_PRINT = 2; // 显示打印网格线
     const GRIDLINES_SHOW_ALL = 3; // 显示 屏幕网格线 和 打印网格线
 
-    public int $gridline; // 网格线
-    public int $zoom; // 缩放
+    public int $gridline = 0; // 网格线
+    public ?int $zoom = null; // 缩放
     public bool $hide = false; // 是否隐藏
     public bool $isFirst = false; // 是否为选中
 

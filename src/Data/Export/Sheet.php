@@ -42,9 +42,9 @@ class Sheet extends BaseObject
     /**
      * 页码样式
      *
-     * @var SheetStyle
+     * @var null|SheetStyle
      */
-    public SheetStyle $style;
+    public ?SheetStyle $style = null;
 
     /**
      * 数据
