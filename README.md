@@ -211,8 +211,11 @@ class UserExportConfig extends ExportConfig
          'isFirst' => true,
       ]);
 ]),
+```
+
 - Column 列
-new Column([
+```php
+ new Column([
       'title' => "一级列", // 列名
       //'width' => 32, // 宽度
       'height' => 58,
@@ -245,8 +248,7 @@ new Column([
               ])
           ]),
       ],
-  ]),
-
+]),
 ```
 #### 导入
 - config
