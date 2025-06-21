@@ -283,7 +283,7 @@ abstract class Driver implements DriverInterface
      * @param ImportConfig $config
      * @param ImportSheet $sheet
      * @param array $row
-     *
+     * @param int $rowIndex
      * @return mixed|null
      */
     protected function importRowCallback(callable $callback, ImportConfig $config, ImportSheet $sheet, array $row, int $rowIndex)
