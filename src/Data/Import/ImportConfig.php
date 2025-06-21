@@ -8,7 +8,6 @@ use Vartruexuan\HyperfExcel\Data\BaseConfig;
 
 class ImportConfig extends BaseConfig
 {
-
     /**
      * 是否直接返回sheet数据
      *
@@ -22,7 +21,6 @@ class ImportConfig extends BaseConfig
      */
     public string $path = '';
 
-
     /**
      * 读取页
      * @var Sheet[]
@@ -35,7 +33,6 @@ class ImportConfig extends BaseConfig
      * @var string
      */
     private string $tempPath = '';
-
 
     /**
      * 获取地址
@@ -57,7 +54,6 @@ class ImportConfig extends BaseConfig
         return $this->isAsync;
     }
 
-
     /**
      * 设置导入地址
      *
@@ -69,7 +65,6 @@ class ImportConfig extends BaseConfig
         $this->path = $path;
         return $this;
     }
-
 
     /**
      * 设置临时文件地址
@@ -93,7 +88,6 @@ class ImportConfig extends BaseConfig
         return $this->tempPath;
     }
 
-
     /**
      * 序列化
      *
@@ -102,10 +96,10 @@ class ImportConfig extends BaseConfig
     public function __serialize(): array
     {
         return [
+            'serviceName' => $this->getServiceName(),
             'path' => $this->getPath(),
             'isAsync' => $this->getIsAsync(),
             'token' => $this->getToken(),
         ];
     }
-
 }

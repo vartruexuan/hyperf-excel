@@ -34,6 +34,10 @@ abstract class BaseConfig extends BaseObject
      */
     public string $token = '';
 
+    public function getServiceName(): string
+    {
+        return $this->serviceName;
+    }
 
     public function setToken(string $token): static
     {

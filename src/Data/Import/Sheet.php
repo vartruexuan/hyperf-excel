@@ -8,7 +8,6 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
 
 class Sheet extends BaseObject
 {
-
     /**
      * 页名
      *
@@ -59,7 +58,6 @@ class Sheet extends BaseObject
      */
     public array $headerMap = [];
 
-
     /**
      * 是否全量返回整页数据
      *
@@ -81,14 +79,12 @@ class Sheet extends BaseObject
      */
     public bool  $skipRowIndex = false;
 
-
     /**
      * 数据类型(列下标=>类型)
      *
      * @var array
      */
     public array $columnTypes = [];
-
 
     /**
      * 游标读取回调
@@ -101,7 +97,6 @@ class Sheet extends BaseObject
      */
     public  $callback;
 
-
     /**
      * 获取name
      *
@@ -111,7 +106,6 @@ class Sheet extends BaseObject
     {
         return $this->name;
     }
-
 
     /**
      * 获取最终列头信息

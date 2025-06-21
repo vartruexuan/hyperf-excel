@@ -26,11 +26,6 @@ class ExportConfig extends BaseConfig
     public array $sheets = [];
 
 
-    public function getServiceName(): string
-    {
-        return $this->serviceName;
-    }
-
     public function getOutPutType(): string
     {
         return $this->outPutType;
