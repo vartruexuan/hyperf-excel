@@ -66,7 +66,7 @@ class Style extends BaseObject
     public const PATTERN_GRAY_0625 = 19;       // 6.25%灰度填充
 
     public bool $italic = false; // 斜体
-    public int $align = 0; // 对齐
+    public array $align = []; // 对齐
     public bool $strikeout = false; // 文本中间划线
     public int $underline = 0; // 下划线
     public bool $wrap = false; // 文本换行
@@ -84,7 +84,7 @@ class Style extends BaseObject
         return $this;
     }
 
-    public function setAlign(int $align): self
+    public function setAlign(array $align): self
     {
         $this->align = $align;
         return $this;
