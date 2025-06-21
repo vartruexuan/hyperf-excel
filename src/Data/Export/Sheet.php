@@ -122,25 +122,27 @@ class Sheet extends BaseObject
     /**
      * 获取头部信息
      *
+     * @param Column[] $columns
      * @return array|string[]
      */
-    public function getHeaders()
+    public function getHeaders(array $columns)
     {
         return array_map(function (Column $col) {
             return $col->title;
-        }, $this->getColumns());
+        }, $columns);
     }
 
     /**
      * 格式行数据
      *
      * @param $row
-     * @return array
+     * @param array $columns
+     * @return Column[]
      */
-    public function formatRow($row)
+    public function formatRow($row,array $columns)
     {
         $newRow = [];
-        foreach ($this->columns as $column) {
+        foreach ($columns as $column) {
             $newRow[$column->field] = $row[$column->field] ?? '';
             if (is_callable($column->callback)) {
                 $newRow[$column->field] = call_user_func($column->callback, $row);
@@ -153,10 +155,13 @@ class Sheet extends BaseObject
      * 格式化多行数据
      *
      * @param $list
+     * @param Column[] $columns
      * @return array
      */
-    public function formatList($list)
+    public function formatList($list, array $columns)
     {
-        return array_map([$this, 'formatRow'], $list ?? []);
+        return array_map(function ($item) use ($columns) {
+            return $this->formatRow($item, $columns);
+        }, $list ?? []);
     }
 }

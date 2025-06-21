@@ -8,6 +8,7 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\Export\Column;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\SheetStyle;
+use Vartruexuan\HyperfExcel\Data\Export\Style;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
@@ -105,7 +106,6 @@ class XlsWriterDriver extends Driver
         return $sheetData;
     }
 
-
     /**
      * export sheet
      *
@@ -123,15 +123,14 @@ class XlsWriterDriver extends Driver
 
         $this->event->dispatch(new BeforeExportSheet($config, $this, $sheet));
 
-        // $excel->header($sheet->getHeaders());
-        $excel->data($sheet->getHeaders());
-
-        if ($sheet->style) {
+        if (!empty($sheet->style)) {
             $this->setSheetStyle($excel, $sheet->style);
         }
 
-        // 设置列样式
-        $this->setColumnStyle($excel, $sheet->getColumns());
+        [$leafNodes, $fullStructure, $maxDepth] = Column::processColumns($sheet->getColumns());
+
+        $this->exportSheetHeader($excel, $fullStructure);
+        $excel->setCurrentLine($maxDepth);
 
         $totalCount = $sheet->getCount();
         $pageSize = $sheet->getPageSize();
@@ -157,7 +156,7 @@ class XlsWriterDriver extends Driver
             $listCount = count($list ?? []);
 
             if ($list) {
-                $excel->data($sheet->formatList($list));
+                $excel->data($sheet->formatList($list, $leafNodes));
             }
 
             $isEnd = !$isCallback || $totalCount <= 0 || $totalCount <= $pageSize || ($listCount < $pageSize || $pageNum <= $page);
@@ -166,6 +165,36 @@ class XlsWriterDriver extends Driver
         } while (!$isEnd);
 
         $this->event->dispatch(new AfterExportSheet($config, $this, $sheet));
+    }
+
+    /**
+     * 设置header
+     *
+     * @param Excel $excel
+     * @param Column[] $columns
+     * @return void
+     */
+    protected function exportSheetHeader(Excel $excel, array $columns)
+    {
+        foreach ($columns as $column) {
+            // 设置列header
+            $colStr = Excel::stringFromColumnIndex($column->col);
+            $rowIndex = $column->row + 1;
+            $endStr = Excel::stringFromColumnIndex($column->col + $column->colSpan - 1); // 结束列
+            $endRowIndex = $rowIndex + $column->rowSpan - 1; // 结束行
+            $range = "{$colStr}{$rowIndex}:{$endStr}{$endRowIndex}";
+
+            // 合并单元格|设置header单元格
+            $excel->mergeCells($range, $column->title, !empty($column->headerStyle) ? $this->styleToResource($excel, $column->headerStyle) : null);
+
+            // 设置高度
+            if ($column->height > 0) {
+                $excel->setRow($range, $column->height);
+            }
+            // 设置宽度|列样式
+            $defaultWidth = 5 * mb_strlen($column->title, 'utf-8');
+            $excel->setColumn($range, $column->width > 0 ? $column->width : $defaultWidth, !empty($column->style) ? $this->styleToResource($excel, $column->style) : null);
+        }
     }
 
     /**
@@ -190,22 +219,6 @@ class XlsWriterDriver extends Driver
         }
         if ($style->isFirst) {
             $excel->setCurrentSheetIsFirst();
-        }
-    }
-
-    /**
-     * 设置列样式
-     *
-     * @param Excel $excel
-     * @param Column[] $sheetColumns
-     * @return void
-     */
-    protected function setColumnStyle(Excel $excel, array $sheetColumns)
-    {
-        foreach ($sheetColumns as $key => $sheetColumn) {
-            if ($sheetColumn->style) {
-                $excel->setColumn(Excel::stringFromColumnIndex($key), $sheetColumn->width, $sheetColumn->style);
-            }
         }
     }
 
@@ -258,7 +271,6 @@ class XlsWriterDriver extends Driver
         return $sheetData;
     }
 
-
     /**
      * 执行行回调
      *
@@ -302,5 +314,59 @@ class XlsWriterDriver extends Driver
         ])) {
             throw new ExcelException('File mime type error');
         }
+    }
+
+    /**
+     * 样式转换
+     *
+     * @param Excel $excel
+     * @param Style $style
+     * @return resource
+     */
+    protected function styleToResource(Excel $excel, Style $style)
+    {
+        $format = new \Vtiful\Kernel\Format($excel->getHandle());
+
+        if (!empty($style->align)) {
+            $format->align(...$style->align);
+        }
+
+        if ($style->bold) {
+            $format->bold();
+        }
+
+        if (!empty($style->font)) {
+            $format->font($style->font);
+        }
+
+        if ($style->italic) {
+            $format->italic();
+        }
+
+        if ($style->wrap) {
+            $format->wrap();
+        }
+
+        if ($style->underline > 0) {
+            $format->underline($style->underline);
+        }
+
+        if ($style->backgroundColor && $style->backgroundStyle) {
+            $format->background($style->backgroundColor, $style->backgroundStyle > 0 ? $style->backgroundStyle : Style::PATTERN_SOLID);
+        }
+
+        if ($style->fontSize > 0) {
+            $format->fontSize($style->fontSize);
+        }
+
+        if ($style->fontColor) {
+            $format->fontColor($style->fontColor);
+        }
+
+        if ($style->strikeout) {
+            $format->strikeout();
+        }
+
+        return $format->toResource();
     }
 }
