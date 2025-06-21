@@ -36,7 +36,12 @@ return [
                 'enabled' => true,
                 'prefix' => 'HyperfExcel',
                 'expire' => 3600, // 数据失效时间
-            ]
+            ],
+            // 清除临时文件
+            'cleanTempFile' => [
+                'enabled' => true, // 是否允许
+                'time' => 1800, // 文件未操作时间(秒)
+            ],
         ]
     ],
 ];

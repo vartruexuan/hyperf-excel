@@ -13,6 +13,7 @@ namespace Vartruexuan\HyperfExcel;
 
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
+use Vartruexuan\HyperfExcel\Process\CleanFileProcess;
 
 class ConfigProvider
 {
@@ -26,6 +27,9 @@ class ConfigProvider
             ],
             'listeners' => [
                 ProgressListener::class,
+            ],
+            'processes' => [
+                CleanFileProcess::class
             ],
             'publish' => [
                 [
