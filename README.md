@@ -5,12 +5,11 @@
 [![License](https://img.shields.io/packagist/l/vartruexuan/hyperf-excel)](https://github.com/vartruexuan/hyperf-excel)
 
 # 概述
-excel 导入导出,支持异步、进度构建。
+excel 同步|异步智能配置导入导出
 
 ## 组件能力
-
-- [x] 导入、导出excel
-- [x] 支持异步操作,进度构建,进度消息输出
+- [x] 无限极头配置<跨列|跨行>、样式配置、进度、消息输出
+- [x] 异步导入导出
 - [x] 格式 `xlsx`
 - [x] 支持驱动 `xlswriter`
 
@@ -102,8 +101,8 @@ $excel->progress->popMessage($token);
 ```
 
 ### 导入导出config类配置
-#### config
-- 导出
+#### 导出
+- config
 ```php
 <?php
 
@@ -188,7 +187,69 @@ class UserExportConfig extends ExportConfig
 }
 
 ```
-- 导入
+- Sheet 页码
+```php
+ new Sheet([
+      'name' => '导入模版', // 页码名
+      'columns' => [ // 列配置
+         new \Vartruexuan\HyperfExcel\Data\Export\Column([
+         
+        ]),
+      ],
+      'count' => 0, // 数据数量
+      'data' => [], // 数据(array|callback)
+      'pageSize' => 1, // 分批导出数
+      // 页码样式
+      'style'=> new  \Vartruexuan\HyperfExcel\Data\Export\SheetStyle([
+         // 网格线
+         'gridline'=> \Vartruexuan\HyperfExcel\Data\Export\SheetStyle::GRIDLINES_HIDE_ALL,
+         // 缩放 (10 <= $scale <= 400)
+         'zoom'=> 50,  
+         // 隐藏当前页码 
+         'hide' => false, 
+         // 选中当前页码
+         'isFirst' => true,
+      ]);
+]),
+- Column 列
+new Column([
+      'title' => "一级列", // 列名
+      //'width' => 32, // 宽度
+      'height' => 58,
+      // header 单元样式
+      'headerStyle' => new Style([
+          'wrap' => true,
+          'fontColor' => 0x2972F4,
+          'font' => '等线',
+          'align' => [Style::FORMAT_ALIGN_LEFT, Style::FORMAT_ALIGN_VERTICAL_CENTER],
+          'fontSize' => 10,
+      ]),
+      // 子列 <自动跨列>
+      'children' => [
+          new Column([
+              'title' => '二级列1',
+              'field' => 'key1', // 数据字段名
+              'width' => 32, // 宽度
+              'headerStyle' => new Style([
+                  'align' => [Style::FORMAT_ALIGN_CENTER],
+                  'bold' => true,
+              ]),
+          ]),
+          new Column([
+              'title' => '二级列2',
+              'field' => 'key2',
+              'width' => 32,
+              'headerStyle' => new Style([
+                  'align' => [Style::FORMAT_ALIGN_CENTER],
+                  'bold' => true,
+              ])
+          ]),
+      ],
+  ]),
+
+```
+#### 导入
+- config
 ```php
 <?php
 
