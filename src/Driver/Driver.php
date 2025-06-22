@@ -41,6 +41,7 @@ use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use function Hyperf\Support\make;
+use Hyperf\Coroutine\Coroutine;
 
 abstract class Driver implements DriverInterface
 {
@@ -283,6 +284,7 @@ abstract class Driver implements DriverInterface
             // 上传
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
                 $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                $this->deleteFile($filePath);
                 if (!$this->filesystem->fileExists($path)) {
                     throw new ExcelException('File upload failed');
                 }
@@ -299,6 +301,7 @@ abstract class Driver implements DriverInterface
                 $resp->setHeader('Cache-Control', 'must-revalidate');
                 $resp->setHeader('Cache-Control', 'max-age=0');
                 $resp->setHeader('Pragma', 'public');
+                $this->deleteFile($filePath);
                 return $resp;
                 break;
             default:
@@ -318,6 +321,20 @@ abstract class Driver implements DriverInterface
             $config->setToken($this->buildToken());
         }
         return $config;
+    }
+
+    protected function deleteFile($filePath)
+    {
+        $callback = function () use ($filePath) {
+            if (file_exists($filePath)) {
+                Helper::deleteFile($filePath);
+            }
+        };
+        if (Coroutine::inCoroutine()) {
+            Coroutine::defer($callback);
+        } else {
+            $callback();
+        }
     }
 
     /**
