@@ -27,18 +27,19 @@ class DriverFactory
     {
         $config = $container->get(ConfigInterface::class);
 
-
+        $options = $config->get('excel.options');
         $this->configs = $config->get('excel.drivers', []);
 
         foreach ($this->configs as $key => $item) {
+            $item = array_merge($options ?? [], $item);
             $driverClass = $item['driver'];
 
-            if (! class_exists($driverClass)) {
+            if (!class_exists($driverClass)) {
                 throw new InvalidDriverException(sprintf('[Error] class %s is invalid.', $driverClass));
             }
 
             $driver = make($driverClass, ['config' => $item, 'name' => $key]);
-            if (! $driver instanceof DriverInterface) {
+            if (!$driver instanceof DriverInterface) {
                 throw new InvalidDriverException(sprintf('[Error] class %s is not instanceof %s.', $driverClass, DriverInterface::class));
             }
 
@@ -57,7 +58,7 @@ class DriverFactory
     public function get(string $name): DriverInterface
     {
         $driver = $this->drivers[$name] ?? null;
-        if (! $driver instanceof DriverInterface) {
+        if (!$driver instanceof DriverInterface) {
             throw new InvalidDriverException(sprintf('[Error]  %s is a invalid driver.', $name));
         }
 

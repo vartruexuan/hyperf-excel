@@ -202,48 +202,6 @@ abstract class Driver implements DriverInterface
     }
 
     /**
-     * 清理文件
-     *
-     * @return array
-     * @throws ExcelException
-     */
-    public function cleanTempFile(): array
-    {
-        $directory = $this->getTempDir();
-
-        $maxAgeSeconds = $this->config['cleanTempFile']['time'] ?? 7200;
-        $isEnabled = $this->config['cleanTempFile']['enabled'] ?? true;
-        if (!$isEnabled) {
-            return [];
-        }
-        $deletedFiles = [];
-        $currentTime = time();
-
-        $files = scandir($directory);
-
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-
-            $filePath = $directory . DIRECTORY_SEPARATOR . $file;
-
-            if (is_file($filePath)) {
-                $fileTime = filemtime($filePath);
-                $ageSeconds = $currentTime - $fileTime;
-
-                if ($ageSeconds > $maxAgeSeconds) {
-                    if (Helper::deleteFile($filePath)) {
-                        $deletedFiles[] = $filePath;
-                    }
-                }
-            }
-        }
-
-        return $deletedFiles;
-    }
-
-    /**
      * 导出数据回调
      *
      * @param callable $callback 回调
