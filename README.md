@@ -143,8 +143,10 @@ class UserExportConfig extends ExportConfig
                 'name' => 'sheet1',
                 'columns' => [
                     new Column([
-                        'title' => 'username',
-                        'field' => '用户名',
+                        'title' => '用户名',
+                        'field' => 'username',
+                        // 子列
+                        'children' => []
                     ]),
                     new Column([
                         'title' => '姓名',
