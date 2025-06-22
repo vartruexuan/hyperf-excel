@@ -190,7 +190,7 @@ abstract class Driver implements DriverInterface
      * @return string
      * @throws ExcelException
      */
-    protected function getTempDir()
+    public function getTempDir()
     {
         $dir = Helper::getTempDir() . DIRECTORY_SEPARATOR . 'hyperf-excel';
         if (!is_dir($dir)) {
