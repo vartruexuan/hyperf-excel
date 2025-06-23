@@ -283,11 +283,16 @@ abstract class Driver implements DriverInterface
         switch ($config->outPutType) {
             // 上传
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
-                $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
-                $this->deleteFile($filePath);
+                try {
+                    $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                } catch (\Throwable $throwable) {
+                    throw new ExcelException('File upload failed:' . $throwable->getMessage() . ',' . get_class($throwable));
+                }
                 if (!$this->filesystem->fileExists($path)) {
                     throw new ExcelException('File upload failed');
                 }
+
+                $this->deleteFile($filePath);
                 return $path;
                 break;
             // 直接输出
