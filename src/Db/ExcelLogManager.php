@@ -20,7 +20,6 @@ class ExcelLogManager
 
     public function __construct(protected ContainerInterface $container, protected array $config, protected Driver $driver)
     {
-        $this->config = $driver->getConfig()['dbLog'] ?? [];
         $this->model = $this->config['model'] ?? ExcelLog::class;
     }
 
