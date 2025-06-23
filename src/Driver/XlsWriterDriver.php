@@ -91,11 +91,20 @@ class XlsWriterDriver extends Driver
 
         $sheetData = [];
 
-        foreach ($sheets as $sheet) {
+
+        $sheets = array_map(function ($sheet) use ($sheetList) {
             if ($sheet->readType == ImportSheet::SHEET_READ_TYPE_INDEX) {
                 $sheetName = $sheetList[$sheet->index];
                 $sheet->name = $sheetName;
             }
+            // 页码不存在
+            if (!in_array($sheet->name, $sheetList)) {
+                throw new ExcelException("sheet {$sheet->name} not exist");
+            }
+            return $sheet;
+        }, $sheets);
+
+        foreach ($sheets as $sheet) {
             $sheetData[$sheet->name] = $this->importSheet($excel, $sheet, $config);
         }
 
@@ -229,13 +238,14 @@ class XlsWriterDriver extends Driver
      * @param ImportSheet $sheet
      * @param ImportConfig $config
      * @return array|null
+     * @throws ExcelException
      */
     protected function importSheet(Excel $excel, ImportSheet $sheet, ImportConfig $config): array|null
     {
         $sheetName = $sheet->name;
 
         $this->event->dispatch(new BeforeImportSheet($config, $this, $sheet));
-
+        
         $excel->openSheet($sheetName);
 
         $header = [];
@@ -249,7 +259,7 @@ class XlsWriterDriver extends Driver
             $header = $excel->nextRow();
         }
 
-        $columnTypes = $sheet->getColumnTypes($header);
+        $columnTypes = $sheet->getColumnTypes($header ?? []);
 
         if ($sheet->callback || $header) {
             $rowIndex = 0;
