@@ -95,7 +95,7 @@ use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use \Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use \Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use \Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
-use \Vartruexuan\HyperfExcel\Data\Export\ImportConfig
+use \Vartruexuan\HyperfExcel\Data\Import\ImportConfig
 
 $excel = ApplicationContext::getContainer()->get(DriverInterface::class);
 // 工厂类方式
