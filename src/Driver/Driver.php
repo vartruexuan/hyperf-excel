@@ -285,6 +285,7 @@ abstract class Driver implements DriverInterface
             case ExportConfig::OUT_PUT_TYPE_UPLOAD:
                 try {
                     $this->filesystem->writeStream($path, fopen($filePath, 'r+'));
+                    $this->deleteFile($filePath);
                 } catch (\Throwable $throwable) {
                     throw new ExcelException('File upload failed:' . $throwable->getMessage() . ',' . get_class($throwable));
                 }
@@ -292,7 +293,6 @@ abstract class Driver implements DriverInterface
                     throw new ExcelException('File upload failed');
                 }
 
-                $this->deleteFile($filePath);
                 return $path;
                 break;
             // 直接输出
