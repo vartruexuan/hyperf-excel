@@ -249,8 +249,8 @@ class XlsWriterDriver extends Driver
             $header = $excel->nextRow();
         }
 
-        $columnTypes = $sheet->getColumnTypes();
-        var_dump($columnTypes);
+        $columnTypes = $sheet->getColumnTypes($header);
+
         if ($sheet->callback || $header) {
             $rowIndex = 0;
             if ($config->isReturnSheetData) {

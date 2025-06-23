@@ -111,13 +111,23 @@ class Sheet extends BaseObject
     /**
      * 获取列数据类型
      *
+     * @param array $header
      * @return array
      */
-    public function getColumnTypes(): array
+    public function getColumnTypes(array $header = []): array
     {
-        return array_map(function (Column $column) {
-            return $column->type;
-        }, $this->columns);
+        $types = [];
+        $columnTypes = [];
+        foreach ($this->columns as $column) {
+            $columnTypes[$column->title] = $column->type ?: Column::TYPE_STRING;
+        }
+        $types = array_values($columnTypes);
+        if (!empty($header)) {
+            $types = array_map(function ($title) use ($columnTypes) {
+                return $columnTypes[$title] ?? Column::TYPE_STRING;
+            }, $header);
+        }
+        return $types;
     }
 
     /**
