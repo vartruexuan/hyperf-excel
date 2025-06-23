@@ -247,12 +247,14 @@ class XlsWriterDriver extends Driver
                 $excel->setSkipRows($sheet->headerIndex - 1);
             }
             $header = $excel->nextRow();
-            $header = $sheet->getHeader($header ?? []);
         }
 
+        $columnTypes = $sheet->getColumnTypes();
+        var_dump($columnTypes);
         if ($sheet->callback || $header) {
             $rowIndex = 0;
             if ($config->isReturnSheetData) {
+                $excel->setType($columnTypes);
                 // 返回全量数据
                 $sheetData = $excel->getSheetData();
                 if ($sheet->isSetHeader) {
@@ -260,7 +262,7 @@ class XlsWriterDriver extends Driver
                 }
             } else {
                 // 执行回调
-                while (null !== $row = $excel->nextRow()) {
+                while (null !== $row = $excel->nextRow($columnTypes)) {
                     $this->rowCallback($config, $sheet, $row, $header, ++$rowIndex);
                 }
             }

@@ -41,6 +41,13 @@ class Sheet extends BaseObject
     public bool $isSetHeader = false;
 
     /**
+     * 列配置
+     *
+     * @var Column[]
+     */
+    public array $columns = [];
+
+    /**
      * 列头数据行下标（从1开始）
      *
      * @var int
@@ -77,14 +84,8 @@ class Sheet extends BaseObject
      *
      * @var int
      */
-    public bool  $skipRowIndex = false;
+    public bool $skipRowIndex = false;
 
-    /**
-     * 数据类型(列下标=>类型)
-     *
-     * @var array
-     */
-    public array $columnTypes = [];
 
     /**
      * 游标读取回调
@@ -95,7 +96,7 @@ class Sheet extends BaseObject
      * `
      * @var
      */
-    public  $callback;
+    public $callback;
 
     /**
      * 获取name
@@ -108,16 +109,15 @@ class Sheet extends BaseObject
     }
 
     /**
-     * 获取最终列头信息
+     * 获取列数据类型
      *
-     * @param array $cols
      * @return array
      */
-    public function getHeader(array $cols)
+    public function getColumnTypes(): array
     {
-        return array_map(function ($n) {
-            return $this->headerMap[$n] ?? $n;
-        }, $cols);
+        return array_map(function (Column $column) {
+            return $column->type;
+        }, $this->columns);
     }
 
     /**
@@ -143,6 +143,14 @@ class Sheet extends BaseObject
      */
     public function formatRowByHeader($row, $header)
     {
-        return array_combine($header, $row);
+        $data = [];
+        $header = array_flip($header);
+        /**
+         * @var  Column $column
+         */
+        foreach ($this->columns as $column) {
+            $data[$column->field ?: $column->title] = $row[$header[$column->title]];
+        }
+        return $data;
     }
 }
