@@ -287,17 +287,18 @@ class UserImportConfig extends AbstractImportConfig
                 'isSetHeader' => true,
                    'columns' => [
                       new Column([
-                          'title' => '仓库编码', // excel中列头
-                          'field' => 'warehouse_code', // 映射字段名
+                          'title' => '用户名', // excel中列头
+                          'field' => 'username', // 映射字段名
                           'type' => Column::TYPE_STRING, // 数据类型(默认 string)
                       ]),
                       new Column([
-                          'title' => '商品编码',
-                          'field' => 'sku',
+                          'title' => '年龄',
+                          'field' => 'age',
+                           'type' => Column::TYPE_INT,
                       ]),
                       new Column([
-                          'title' => '保险库存',
-                          'field' => 'safety_qty',
+                          'title' => '身高',
+                          'field' => 'height',
                           'type' => Column::TYPE_INT,
                       ]),
                 ],
@@ -339,164 +340,46 @@ class UserImportConfig extends AbstractImportConfig
 ```php
 // config/autoload/listeners.php
 return [
-    Vartruexuan\HyperfExcel\Listener\ExcelLogListener::class
+    Vartruexuan\HyperfExcel\Listener\ExcelLogListener::class,
 ];
 ```
+## db日志监听器
+```php
+// config/autoload/listeners.php
+return [
+    Vartruexuan\HyperfExcel\Listener\ExcelLogDbListener::class,
+];
+```
+- 构建数据库表
+```bash
+php bin/hyperf.php migrate  --path=./vendor/vartruexuan/hyperf-excel/migrations
+```
+或
+```sql
+# 直接执行sql
+CREATE TABLE `excel_log` (
+     `id` int unsigned NOT NULL AUTO_INCREMENT,
+     `token` varchar(64) NOT NULL DEFAULT '',
+     `type` enum('export','import') NOT NULL DEFAULT 'export' COMMENT '类型:export导出import导入',
+     `config_class` varchar(250) NOT NULL DEFAULT '',
+     `config` json DEFAULT NULL COMMENT 'config信息',
+     `service_name` varchar(20) NOT NULL DEFAULT '' COMMENT '服务名',
+     `sheet_progress` json DEFAULT NULL COMMENT '页码进度',
+     `progress` json DEFAULT NULL COMMENT '总进度信息',
+     `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态:1.待处理2.正在处理3.处理完成4.处理失败',
+     `data` json NOT NULL COMMENT '数据信息',
+     `remark` varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
+     `url` varchar(300) NOT NULL DEFAULT '' COMMENT 'url地址',
+     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`),
+     UNIQUE KEY `uniq_token` (`token`)
+) ENGINE=InnoDB  COMMENT='导入导出日志';
+
+```
+
 ## 自定义监听器
 - 继承`Vartruexuan\HyperfExcel\Listener\BaseListener`
-- demo:实现一个自定义监听器,记录导入导出到数据库中 监听器
-```php
-
-<?php
-
-namespace App\Listener;
-
-use App\Exception\BusinessException;
-use App\Kernel\Http\ResultCode;
-use App\Service\ExcelLogService;
-use Hyperf\Di\Annotation\Inject;
-use Vartruexuan\HyperfExcel\Event\AfterExport;
-use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
-use Vartruexuan\HyperfExcel\Event\AfterImport;
-use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
-use Vartruexuan\HyperfExcel\Event\BeforeExport;
-use Vartruexuan\HyperfExcel\Event\BeforeImport;
-use Vartruexuan\HyperfExcel\Listener\BaseListener;
-use Vartruexuan\HyperfExcel\Event\Error;
-
-class ExcelLogListener extends BaseListener
-{
-    #[inject]
-    public ExcelLogService $excelLogService;
-    
-    function beforeExport(object $event)
-    {
-        $this->excelLogService->saveLog($event->config);
-    }
-
-    function beforeExportExcel(object $event)
-    {
-        // TODO: Implement beforeExportExcel() method.
-    }
-
-    function beforeExportData(object $event)
-    {
-        // TODO: Implement beforeExportData() method.
-    }
-
-    function beforeExportSheet(object $event)
-    {
-        // TODO: Implement beforeExportSheet() method.
-    }
-
-    function afterExport(object $event)
-    {
-        /**
-         * @var AfterExport $event
-         */
-        $this->excelLogService->saveLog($event->config));
-    }
-
-    function afterExportData(object $event)
-    {
-        // TODO: Implement afterExportData() method.
-    }
-
-    function afterExportExcel(object $event)
-    {
-        // TODO: Implement afterExportExcel() method.
-    }
-
-    function afterExportSheet(object $event)
-    {
-        /**
-         * @var AfterExportSheet $event
-         */
-        $this->excelLogService->saveLog($event->config));
-    }
-
-    function beforeImport(object $event)
-    {
-        /**
-         * @var BeforeImport $event
-         */
-        $this->excelLogService->saveLog($event->config));
-    }
-
-    function beforeImportExcel(object $event)
-    {
-        // TODO: Implement beforeImportExcel() method.
-    }
-
-    function beforeImportData(object $event)
-    {
-        // TODO: Implement beforeImportData() method.
-    }
-
-    function beforeImportSheet(object $event)
-    {
-        // TODO: Implement beforeImportSheet() method.
-    }
-
-    function afterImport(object $event)
-    {
-        /**
-         * @var AfterImport $event
-         */
-        $this->excelLogService->saveLog($event->config))
-    }
-
-    function afterImportData(object $event)
-    {
-        // TODO: Implement afterImportData() method.
-    }
-
-    function afterImportExcel(object $event)
-    {
-        // TODO: Implement afterImportExcel() method.
-    }
-
-    function afterImportSheet(object $event)
-    {
-        /**
-         * @var AfterImportSheet $event
-         */
-       $this->excelLogService->saveLog($event->config));
-    }
-
-    function error(object $event)
-    {
-        /**
-         * @var Error $event
-         */
-        $this->excelLogService->saveLog($event->config,[
-            'remark' => $event->exception->getMessage(),
-        ]));
-    }
-}
-
-```
-sql
-```sql
-CREATE TABLE `excel_log` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `token` varchar(64) NOT NULL DEFAULT '',
-  `type` enum('export','import') NOT NULL DEFAULT 'export' COMMENT '类型:export导出import导入',
-  `config_class` varchar(250) NOT NULL DEFAULT '',
-  `config` json DEFAULT NULL COMMENT 'config信息',
-  `service_name` varchar(20) NOT NULL DEFAULT '' COMMENT '服务名',
-  `sheet_progress` json DEFAULT NULL COMMENT '页码进度',
-  `progress` json DEFAULT NULL COMMENT '总进度信息',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '状态:1.待处理2.正在处理3.处理完成4.处理失败',
-  `data` json NOT NULL COMMENT '数据信息',
-  `remark` varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
-  `url` varchar(300) NOT NULL DEFAULT '' COMMENT 'url地址',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniq_token` (`token`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4 COMMENT='导入导出日志';
-```
 ## License
 
 MIT
