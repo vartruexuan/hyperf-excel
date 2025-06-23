@@ -192,7 +192,7 @@ class UserExportConfig extends ExportConfig
 - Sheet 页码
 ```php
  new Sheet([
-      'name' => '导入模版', // 页码名
+      'name' => 'sheet1', // 页码名
       'columns' => [ // 列配置
          new \Vartruexuan\HyperfExcel\Data\Export\Column([
          
@@ -265,6 +265,7 @@ use Hyperf\Collection\Arr;
 use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet;
 use function Hyperf\Support\make;
+use Vartruexuan\HyperfExcel\Data\Import\Column;
 
 class UserImportConfig extends AbstractImportConfig
 {
@@ -284,12 +285,21 @@ class UserImportConfig extends AbstractImportConfig
             new Sheet([
                 'name' => 'sheet1',
                 'isSetHeader' => true,
-                // 字段映射
-                'headerMap' => [
-                    '用户名' => 'username',
-                    '姓名' => 'name',
-                    '年龄' => 'age',
-                    // ...
+                   'columns' => [
+                      new Column([
+                          'title' => '仓库编码', // excel中列头
+                          'field' => 'warehouse_code', // 映射字段名
+                          'type' => Column::TYPE_STRING, // 数据类型(默认 string)
+                      ]),
+                      new Column([
+                          'title' => '商品编码',
+                          'field' => 'sku',
+                      ]),
+                      new Column([
+                          'title' => '保险库存',
+                          'field' => 'safety_qty',
+                          'type' => Column::TYPE_INT,
+                      ]),
                 ],
                 // 数据回调
                 'callback' => [$this, 'rowCallback']
