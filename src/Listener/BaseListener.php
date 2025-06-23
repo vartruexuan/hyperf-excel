@@ -35,7 +35,6 @@ use Vartruexuan\HyperfExcel\Event\Error;
  */
 abstract class BaseListener implements ListenerInterface
 {
-    protected LoggerInterface $logger;
     protected ContainerInterface $container;
 
     public function __construct(ContainerInterface $container)
@@ -76,16 +75,18 @@ abstract class BaseListener implements ListenerInterface
     protected function getEventClass(object $event)
     {
         return lcfirst(basename(str_replace('\\', '/', get_class($event))));
+    }
 
+    protected function getLogger(object $event): LoggerInterface
+    {
+        return $event->driver->logger;
     }
 
     public function process(object $event): void
     {
         $className = $this->getEventClass($event);
-        $this->logger = $event->driver->logger;
         $this->{$className}($event);
     }
-
 
     abstract function beforeExport(object $event);
 

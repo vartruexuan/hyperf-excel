@@ -40,6 +40,9 @@ return [
             'prefix' => 'HyperfExcel',
             'expire' => 3600, // 数据失效时间
         ],
+        'dbLog' => [
+            'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,
+        ],
     ],
     // 清除临时文件
     'cleanTempFile' => [

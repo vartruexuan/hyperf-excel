@@ -4,15 +4,27 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Listener;
 
+use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
+use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
+use Vartruexuan\HyperfExcel\Event\AfterImport;
+use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
+use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeImport;
+use function Hyperf\Support\make;
+
 /**
  * 监听输出日志
  */
 class ExcelLogDbListener extends BaseListener
 {
-    
     function beforeExport(object $event)
     {
-        // TODO: Implement beforeExport() method.
+        /**
+         * @var BeforeExport $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function beforeExportExcel(object $event)
@@ -32,7 +44,10 @@ class ExcelLogDbListener extends BaseListener
 
     function afterExport(object $event)
     {
-        // TODO: Implement afterExport() method.
+        /**
+         * @var AfterExport $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function afterExportData(object $event)
@@ -47,12 +62,18 @@ class ExcelLogDbListener extends BaseListener
 
     function afterExportSheet(object $event)
     {
-        // TODO: Implement afterExportSheet() method.
+        /**
+         * @var AfterExportSheet $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function beforeImport(object $event)
     {
-        // TODO: Implement beforeImport() method.
+        /**
+         * @var BeforeImport $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function beforeImportExcel(object $event)
@@ -72,7 +93,10 @@ class ExcelLogDbListener extends BaseListener
 
     function afterImport(object $event)
     {
-        // TODO: Implement afterImport() method.
+        /**
+         * @var AfterImport $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function afterImportData(object $event)
@@ -87,11 +111,20 @@ class ExcelLogDbListener extends BaseListener
 
     function afterImportSheet(object $event)
     {
-        // TODO: Implement afterImportSheet() method.
+        /**
+         * @var AfterImportSheet $event
+         */
+        $event->driver->dbLog->saveLog($event->config);
     }
 
     function error(object $event)
     {
-        // TODO: Implement error() method.
+        /**
+         * @var Error $event
+         */
+        $event->driver->dbLog->saveLog($event->config, [
+            'remark' => $event->exception->getMessage(),
+        ]);
     }
+
 }

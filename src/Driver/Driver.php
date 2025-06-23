@@ -25,6 +25,7 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
+use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterImport;
@@ -50,10 +51,10 @@ abstract class Driver implements DriverInterface
     public Filesystem $filesystem;
     public QueueDriverInterface $queue;
     public PackerInterface $packer;
-
     public LoggerInterface $logger;
-
     public Progress $progress;
+    public ExcelLogManager $dbLog;
+
 
     public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
@@ -65,6 +66,10 @@ abstract class Driver implements DriverInterface
         $this->packer = $container->get(PhpSerializerPacker::class);
         $this->progress = make(Progress::class, [
             'config' => $this->config['progress'] ?? [],
+            'driver' => $this,
+        ]);
+        $this->dbLog = make(ExcelLogManager::class, [
+            'config' => $this->config['dbLog'] ?? [],
             'driver' => $this,
         ]);
     }
