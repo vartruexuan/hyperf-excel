@@ -9,6 +9,7 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Db\Model\ExcelLog;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+use Vartruexuan\HyperfExcel\Progress\ProgressData;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
 
 class ExcelLogManager
