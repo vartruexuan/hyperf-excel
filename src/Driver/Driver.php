@@ -55,7 +55,6 @@ abstract class Driver implements DriverInterface
     public Progress $progress;
     public ExcelLogManager $dbLog;
 
-
     public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
         $this->event = $container->get(EventDispatcherInterface::class);
@@ -179,10 +178,10 @@ abstract class Driver implements DriverInterface
     /**
      * 获取临时文件
      *
-     * @return false|string
+     * @return string
      * @throws ExcelException
      */
-    protected function getTempFileName()
+    public function getTempFileName(): string
     {
         if (!$filePath = Helper::getTempFileName($this->getTempDir(), 'ex_')) {
             throw new ExcelException('构建临时文件失败');
@@ -196,7 +195,7 @@ abstract class Driver implements DriverInterface
      * @return string
      * @throws ExcelException
      */
-    public function getTempDir()
+    public function getTempDir(): string
     {
         $dir = Helper::getTempDir() . DIRECTORY_SEPARATOR . 'hyperf-excel';
         if (!is_dir($dir)) {
@@ -380,7 +379,19 @@ abstract class Driver implements DriverInterface
         return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . (new $this->config['export']['pathStrategy'])->getPath($config);
     }
 
+    /**
+     * 获取配置
+     *
+     * @return array
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
     abstract function exportExcel(ExportConfig $config): string;
 
     abstract function importExcel(ImportConfig $config): array|null;
+
+
 }
