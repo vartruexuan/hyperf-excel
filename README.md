@@ -363,7 +363,7 @@ return [
 ```
 - 构建数据库表
 ```bash
-php bin/hyperf.php migrate  --path=./vendor/vartruexuan/hyperf-excel/migrations
+php bin/hyperf.php migrate  --path=./vendor/vartruexuan/hyperf-excel/src/migrations
 ```
 或
 ```sql
