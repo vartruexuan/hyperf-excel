@@ -11,6 +11,9 @@ declare(strict_types=1);
  */
 namespace Vartruexuan\HyperfExcel;
 
+use Vartruexuan\HyperfExcel\Command\ExportCommand;
+use Vartruexuan\HyperfExcel\Command\ImportCommand;
+use Vartruexuan\HyperfExcel\Command\ProgressCommand;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
 use Vartruexuan\HyperfExcel\Process\CleanFileProcess;
@@ -24,6 +27,9 @@ class ConfigProvider
                 DriverInterface::class => ExcelInvoker::class,
             ],
             'commands' => [
+                ExportCommand::class,
+                ImportCommand::class,
+                ProgressCommand::class,
             ],
             'listeners' => [
                 ProgressListener::class,

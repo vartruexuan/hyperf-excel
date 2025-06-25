@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Command;
 
-use Hyperf\Command\Command as HyperfCommand;
 use Psr\Container\ContainerInterface;
 
-class ExportCommand extends HyperfCommand
+class ImportCommand extends AbstractCommand
 {
     protected ContainerInterface $container;
 
@@ -20,5 +19,13 @@ class ExportCommand extends HyperfCommand
     public function handle()
     {
         $this->line("import");
+    }
+
+
+    protected function configure()
+    {
+        $this->setDescription('Run import');
+        $this->addArgument('driver', InputArgument::OPTIONAL, 'The driver of export.', 'xlswriter');
+        $this->addArgument('config', InputArgument::OPTIONAL, 'The config of export.');
     }
 }
