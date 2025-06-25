@@ -26,7 +26,7 @@ class Column extends BaseObject
     /**
      * 数据类型
      *
-     * @var string
+     * @var int
      */
     public int $type = self::TYPE_STRING;
     /**
@@ -34,6 +34,6 @@ class Column extends BaseObject
      *
      * @var string
      */
-    public string $field;
+    public string $field = '';
 
 }
