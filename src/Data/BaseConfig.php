@@ -21,6 +21,20 @@ abstract class BaseConfig extends BaseObject
     public bool $isAsync = false;
 
     /**
+     * 是否设置进度
+     *
+     * @var bool
+     */
+    public bool $isProgress = true;
+
+    /**
+     * 是否设置dbLog
+     *
+     * @var bool
+     */
+    public bool $isDbLog = true;
+
+    /**
      * 页码配置
      *
      * @var array
@@ -47,7 +61,7 @@ abstract class BaseConfig extends BaseObject
 
     public function getToken(): string
     {
-        return  $this->token;
+        return $this->token;
     }
 
     public function setIsAsync(bool $isAsync): static
@@ -55,9 +69,20 @@ abstract class BaseConfig extends BaseObject
         $this->isAsync = $isAsync;
         return $this;
     }
+
     public function getIsAsync(): bool
     {
-        return  $this->isAsync;
+        return $this->isAsync;
+    }
+
+    public function getIsProgress(): bool
+    {
+        return $this->isProgress;
+    }
+
+    public function getIsDbLog(): bool
+    {
+        return $this->isDbLog;
     }
 
     /**

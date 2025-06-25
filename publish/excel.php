@@ -41,6 +41,7 @@ return [
             'expire' => 3600, // 数据失效时间
         ],
         'dbLog' => [
+            'enable' => true,
             'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,
         ],
     ],
