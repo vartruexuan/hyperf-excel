@@ -28,6 +28,7 @@
         "hyperf/codec": "~3.1.0",
         "hyperf/logger": "~3.1.0",
         "hyperf/event": "~3.1.0",
+        "hyperf/command": "~3.1.0",
         "overtrue/http": "^1.2",
         "psr/container": "^1.0 || ^2.0",
         "psr/event-dispatcher": "^1.0",

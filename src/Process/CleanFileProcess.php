@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vartruexuan\HyperfExcel\Process;
 
 use Hyperf\Contract\ConfigInterface;
