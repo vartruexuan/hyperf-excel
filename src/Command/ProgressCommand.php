@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Command;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class ProgressCommand extends AbstractCommand
 {
@@ -24,7 +26,7 @@ class ProgressCommand extends AbstractCommand
     protected function configure()
     {
         $this->setDescription('Run progress');
-        $this->addArgument('driver', InputArgument::OPTIONAL, 'The driver of export.', 'xlswriter');
-        $this->addArgument('config', InputArgument::OPTIONAL, 'The config of export.');
+        $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of import.', 'xlswriter');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of import.');
     }
 }

@@ -6,6 +6,7 @@ namespace Vartruexuan\HyperfExcel\Command;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 class ExportCommand extends AbstractCommand
 {
@@ -25,7 +26,7 @@ class ExportCommand extends AbstractCommand
     protected function configure()
     {
         $this->setDescription('Run export');
-        $this->addArgument('driver', InputArgument::OPTIONAL, 'The driver of export.', 'xlswriter');
-        $this->addArgument('config', InputArgument::OPTIONAL, 'The config of export.');
+        $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of import.', 'xlswriter');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of import.');
     }
 }

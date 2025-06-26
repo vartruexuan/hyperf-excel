@@ -32,11 +32,9 @@ class ExcelLogManager
      *
      * @param BaseConfig $config
      * @param array $saveParam
-     * @return bool
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @return int
      */
-    public function saveLog(BaseConfig $config, array $saveParam = []): bool
+    public function saveLog(BaseConfig $config, array $saveParam = []): int
     {
         $token = $config->getToken();
 

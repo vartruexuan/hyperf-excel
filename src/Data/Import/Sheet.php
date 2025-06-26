@@ -139,12 +139,23 @@ class Sheet extends BaseObject
     public function formatRowByHeader($row, $header)
     {
         $data = [];
-        $header = array_flip($header);
         /**
          * @var  Column $column
          */
-        foreach ($this->columns as $column) {
-            $data[$column->field ?: $column->title] = $row[$header[$column->title]];
+        if (!empty($this->columns)) {
+            $header = array_flip($header);
+            foreach ($this->columns as $k => $column) {
+                $key = $column->field ?: $column->title;
+                $headerKey = $column->title ? ($header[$column->title] ?? $k) : $k;
+                $value = $row[$headerKey] ?? null;
+                if (!empty($key)) {
+                    $data[$key] = $value;
+                } else {
+                    $data[] = $row[$headerKey] ?? null;
+                }
+            }
+        } else {
+            $data = $header ? array_combine($header, $row) : $row;
         }
         return $data;
     }
