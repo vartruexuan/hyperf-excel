@@ -8,23 +8,11 @@ use Vartruexuan\HyperfExcel\Data\BaseObject;
 
 class Sheet extends BaseObject
 {
-    /**
-     * 页名
-     *
-     * @var string
-     */
-    public string $name = 'sheet1';
+
 
     // 读取sheet下标/名称
     public const SHEET_READ_TYPE_NAME = 'name';
     public const SHEET_READ_TYPE_INDEX = 'index';
-
-    /**
-     * 页下标
-     *
-     * @var int
-     */
-    public int $index = 0;
 
     /**
      * 读取类型
@@ -34,11 +22,18 @@ class Sheet extends BaseObject
     public string $readType = self::SHEET_READ_TYPE_NAME;
 
     /**
-     * 是否设置列头
+     * 页下标
      *
-     * @var bool
+     * @var int
      */
-    public bool $isSetHeader = false;
+    public int $index = 0;
+
+    /**
+     * 页名
+     *
+     * @var string
+     */
+    public string $name = 'sheet1';
 
     /**
      * 列配置
@@ -49,21 +44,11 @@ class Sheet extends BaseObject
 
     /**
      * 列头数据行下标（从1开始）
+     *      0 则不设置列头
      *
      * @var int
      */
     public int $headerIndex = 1;
-
-    /**
-     * 列头字段映射信息
-     *  [
-     *      '标题' => 'title',
-     *      // ...
-     * ]
-     *
-     * @var array
-     */
-    public array $headerMap = [];
 
     /**
      * 是否全量返回整页数据

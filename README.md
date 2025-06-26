@@ -298,8 +298,8 @@ class UserImportConfig extends AbstractImportConfig
         $this->setSheets([
             new Sheet([
                 'name' => 'sheet1',
-                'isSetHeader' => true,
-                   'columns' => [
+                'headerIndex' => 1, // 列头下标<0则无列头>
+                'columns' => [
                       new Column([
                           'title' => '用户名', // excel中列头
                           'field' => 'username', // 映射字段名

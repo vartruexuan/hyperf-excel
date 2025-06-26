@@ -245,13 +245,13 @@ class XlsWriterDriver extends Driver
         $sheetName = $sheet->name;
 
         $this->event->dispatch(new BeforeImportSheet($config, $this, $sheet));
-        
+
         $excel->openSheet($sheetName);
 
         $header = [];
         $sheetData = [];
 
-        if ($sheet->isSetHeader) {
+        if ($sheet->headerIndex > 0) {
             if ($sheet->headerIndex > 1) {
                 // 跳过指定行
                 $excel->setSkipRows($sheet->headerIndex - 1);
