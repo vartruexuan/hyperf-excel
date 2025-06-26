@@ -159,7 +159,8 @@ class Sheet extends BaseObject
          * @var  Column $column
          */
         foreach ($this->columns as $column) {
-            $data[$column->field ?: $column->title] = $row[$header[$column->title]];
+            $headerIndex = $header[$column->title] ?? '';
+            $data[$column->field ?: $column->title] = $row[$headerIndex] ?? '';
         }
         return $data;
     }
