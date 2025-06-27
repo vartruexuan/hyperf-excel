@@ -20,6 +20,7 @@ use Vartruexuan\HyperfExcel\Event\BeforeExportExcel;
 use Vartruexuan\HyperfExcel\Event\BeforeExportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeImportExcel;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
+use Vartruexuan\HyperfExcel\Exception\EmptyDataException;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vtiful\Kernel\Excel;
@@ -245,7 +246,7 @@ class XlsWriterDriver extends Driver
         $sheetName = $sheet->name;
 
         $this->event->dispatch(new BeforeImportSheet($config, $this, $sheet));
-        
+
         $excel->openSheet($sheetName);
 
         $header = [];
@@ -256,7 +257,10 @@ class XlsWriterDriver extends Driver
                 // 跳过指定行
                 $excel->setSkipRows($sheet->headerIndex - 1);
             }
-            $header = $excel->nextRow();
+            if (null === $header = $excel->nextRow()) {
+                throw new EmptyDataException('The imported data is empty.');
+            }
+            $sheet->validateHeader($header);
         }
 
         $columnTypes = $sheet->getColumnTypes($header ?? []);

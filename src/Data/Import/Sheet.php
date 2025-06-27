@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Data\Import;
 
 use Vartruexuan\HyperfExcel\Data\BaseObject;
+use Vartruexuan\HyperfExcel\Exception\ExcelException;
 
 class Sheet extends BaseObject
 {
@@ -164,4 +165,22 @@ class Sheet extends BaseObject
         }
         return $data;
     }
+
+
+    /**
+     * 校验header头正确性
+     *
+     * @param array $header
+     * @return void
+     * @throws ExcelException
+     */
+    public function validateHeader(array $header = [])
+    {
+        foreach ($this->columns as $column) {
+            if (!in_array($column->title, $header)) {
+                throw  new ExcelException("The column header does not exist in [{$column->title}]");
+            }
+        }
+    }
+
 }
