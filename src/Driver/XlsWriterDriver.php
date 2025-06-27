@@ -257,6 +257,7 @@ class XlsWriterDriver extends Driver
                 $excel->setSkipRows($sheet->headerIndex - 1);
             }
             $header = $excel->nextRow();
+            $sheet->validateHeader($header);
         }
 
         $columnTypes = $sheet->getColumnTypes($header ?? []);

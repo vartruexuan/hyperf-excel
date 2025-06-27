@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Data\Import;
 
 use Vartruexuan\HyperfExcel\Data\BaseObject;
+use Vartruexuan\HyperfExcel\Exception\ExcelException;
 
 class Sheet extends BaseObject
 {
@@ -135,6 +136,7 @@ class Sheet extends BaseObject
      * @param $row
      * @param $header
      * @return array
+     * @throws ExcelException
      */
     public function formatRowByHeader($row, $header)
     {
@@ -146,6 +148,9 @@ class Sheet extends BaseObject
             $header = array_flip($header);
             foreach ($this->columns as $k => $column) {
                 $key = $column->field ?: $column->title;
+                if ($header && !isset($header[$column->title])) {
+                    throw new ExcelException("The corresponding column header does not exist for [{$column->title}]");
+                }
                 $headerKey = $column->title ? ($header[$column->title] ?? $k) : $k;
                 $value = $row[$headerKey] ?? null;
                 if (!empty($key)) {
@@ -158,5 +163,22 @@ class Sheet extends BaseObject
             $data = $header ? array_combine($header, $row) : $row;
         }
         return $data;
+    }
+
+
+    /**
+     * 校验header头正确性
+     *
+     * @param array $header
+     * @return void
+     * @throws ExcelException
+     */
+    public function validateHeader(array $header = [])
+    {
+        foreach ($this->columns as $column) {
+            if (!in_array($column->title, $header)) {
+                throw  new ExcelException("The column header does not exist in [{$column->title}]");
+            }
+        }
     }
 }
