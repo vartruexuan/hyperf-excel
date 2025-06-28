@@ -190,6 +190,8 @@ class ProgressListener extends BaseListener
         $event->driver->progress->setProgress($event->config, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_FAIL,
         ]));
-        $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
+        if($event->isPush){
+            $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
+        }
     }
 }
