@@ -46,7 +46,6 @@ use Hyperf\Coroutine\Coroutine;
 abstract class Driver implements DriverInterface
 {
     public EventDispatcherInterface $event;
-    public Redis $redis;
     public Filesystem $filesystem;
     public QueueDriverInterface $queue;
     public LoggerInterface $logger;
