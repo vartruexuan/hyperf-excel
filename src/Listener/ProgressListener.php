@@ -16,6 +16,7 @@ use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Event\Event;
+use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 
@@ -23,9 +24,9 @@ class ProgressListener extends BaseListener
 {
     protected ProgressInterface $progress;
 
-    public function __construct(ContainerInterface $container, ProgressInterface $progress)
+    public function __construct(ContainerInterface $container, ExcelLoggerInterface $excelLogger, ProgressInterface $progress)
     {
-        parent::__construct($container);
+        parent::__construct($container, $excelLogger);
 
         $this->progress = $progress;
     }

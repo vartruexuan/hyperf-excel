@@ -14,6 +14,7 @@ use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\Event;
+use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 use function Hyperf\Support\make;
 
 /**
@@ -23,9 +24,9 @@ class ExcelLogDbListener extends BaseListener
 {
     protected ExcelLogInterface $excelLog;
 
-    public function __construct(ContainerInterface $container, ExcelLogInterface $excelLog)
+    public function __construct(ContainerInterface $container, ExcelLoggerInterface $excelLogger, ExcelLogInterface $excelLog)
     {
-        parent::__construct($container);
+        parent::__construct($container, $excelLogger);
         $this->excelLog = $excelLog;
     }
 
@@ -46,7 +47,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var BeforeExport $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function beforeExportExcel(object $event)
@@ -69,7 +70,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var AfterExport $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function afterExportData(object $event)
@@ -87,7 +88,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var AfterExportSheet $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function beforeImport(object $event)
@@ -95,7 +96,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var BeforeImport $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function beforeImportExcel(object $event)
@@ -118,7 +119,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var AfterImport $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function afterImportData(object $event)
@@ -136,7 +137,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var AfterImportSheet $event
          */
-      $this->excelLog->saveLog($event->config);
+        $this->excelLog->saveLog($event->config);
     }
 
     function error(object $event)
@@ -144,7 +145,7 @@ class ExcelLogDbListener extends BaseListener
         /**
          * @var Error $event
          */
-      $this->excelLog->saveLog($event->config, [
+        $this->excelLog->saveLog($event->config, [
             'remark' => $event->exception->getMessage(),
         ]);
     }
