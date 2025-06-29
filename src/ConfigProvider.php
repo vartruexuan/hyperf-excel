@@ -20,6 +20,8 @@ use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
 use Vartruexuan\HyperfExcel\Process\CleanFileProcess;
+use Vartruexuan\HyperfExcel\Progress\Progress;
+use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 
 class ConfigProvider
 {
@@ -28,7 +30,9 @@ class ConfigProvider
         return [
             'dependencies' => [
                 DriverInterface::class => ExcelInvoker::class,
+                ProgressInterface::class => Progress::class,
                 ExcelLogInterface::class => ExcelLogManager::class,
+                ExcelInterface::class => Excel::class
             ],
             'commands' => [
                 ExportCommand::class,

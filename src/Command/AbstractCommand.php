@@ -5,30 +5,34 @@ declare(strict_types=1);
 namespace Vartruexuan\HyperfExcel\Command;
 
 use Hyperf\Command\Command as HyperfCommand;
+use Hyperf\Context\ApplicationContext;
+use PHPStan\Type\ThisType;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
+use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 
 abstract class AbstractCommand extends HyperfCommand
 {
     /**
      * 显示进度
      *
-     * @param $driver
      * @param $token
      * @return void
      */
-    protected function showProgress($driver, $token)
+    protected function showProgress($token)
     {
+        $progress = ApplicationContext::getContainer()->get(ProgressInterface::class);
         $this->output->newLine();
         // 创建进度条
-        $progressRecode = $driver->progress->getRecordByToken($token);
+        $progressRecode = $progress->getRecordByToken($token);
         if (!$progressRecode) {
             $this->error('未找到进度记录');
             return;
         }
 
-        $bar = new ProgressBar($this->output, $progressRecode->progress->total);
+        $bar = new ProgressBar($this->output,0);
         $bar->setFormat("
 <fg=magenta>🔄 任务进度监控</>
 %stats%
@@ -107,7 +111,7 @@ abstract class AbstractCommand extends HyperfCommand
 
         do {
             // 获取最新进度记录
-            $latestProgress = $driver->progress->getRecordByToken($token);
+            $latestProgress = $progress->getRecordByToken($token);
             if ($latestProgress) {
                 // 更新进度条最大值
                 if ($bar->getMaxSteps() != $latestProgress->progress->total) {

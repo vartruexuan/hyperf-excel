@@ -10,32 +10,33 @@ use Symfony\Component\Console\Input\InputOption;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
+use Vartruexuan\HyperfExcel\ExcelInterface;
 
 class ImportCommand extends AbstractCommand
 {
     protected ContainerInterface $container;
+    protected ExcelInterface $excel;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, ExcelInterface $excel)
     {
         $this->container = $container;
+        $this->excel = $excel;
         parent::__construct('excel:import');
     }
 
     public function handle()
     {
+        $config = $this->input->getArgument('config');
         $driver = $this->input->getOption('driver');
-        $config = $this->input->getOption('config');
-        $path = $this->input->getOption('path');
-        $progress= $this->input->getOption('progress');
+        $path = $this->input->getArgument('path');
+        $progress = $this->input->getOption('progress');
 
         $factory = $this->container->get(DriverFactory::class);
         /**
          * @var Driver
          */
-        $driver = $factory->get($driver);
-        if (!$driver instanceof Driver) {
-            $this->error("Don't support driver " . $driver::class);
-            return 0;
+        if ($driver) {
+            $this->excel->serDriverByName($driver);
         }
         /**
          * @var ImportConfig $config
@@ -47,12 +48,12 @@ class ImportCommand extends AbstractCommand
         if ($path) {
             $config->setPath($path);
         }
-        $data = $driver->import($config);
+        $data = $this->excel->import($config);
 
         $this->table(['token'], [[$data->token]]);
 
         if ($progress) {
-            $this->showProgress($driver, $data->token);
+            $this->showProgress( $data->token);
         }
     }
 
@@ -60,12 +61,13 @@ class ImportCommand extends AbstractCommand
     {
         $this->setDescription('Run import');
         $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of import.', 'xlswriter');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of import.');
-        $this->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'The file path of import.');
+
+        $this->addArgument('config', InputArgument::REQUIRED, 'The config of import.');
+        $this->addArgument('path', InputArgument::REQUIRED, 'The file path of import.');
         $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress path of import.', true);
 
-        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="https://xxx.com/demo.xlsx"');
-        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="/excel/demo.xlsx"');
-        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="/excel/demo.xlsx" --no-progress');
+        $this->addUsage('excel:import "App\Excel\DemoImportConfig" "https://xxx.com/demo.xlsx"');
+        $this->addUsage('excel:import  "App\Excel\DemoImportConfig" "/excel/demo.xlsx"');
+        $this->addUsage('excel:import "App\Excel\DemoImportConfig"  "/excel/demo.xlsx" --no-progress');
     }
 }
