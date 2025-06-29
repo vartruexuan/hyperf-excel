@@ -26,7 +26,7 @@ class ImportCommand extends AbstractCommand
         $driver = $this->input->getOption('driver');
         $config = $this->input->getOption('config');
         $path = $this->input->getOption('path');
-
+        $progress= $this->input->getOption('progress');
 
         $factory = $this->container->get(DriverFactory::class);
         /**
@@ -50,6 +50,10 @@ class ImportCommand extends AbstractCommand
         $data = $driver->import($config);
 
         $this->table(['token'], [[$data->token]]);
+
+        if ($progress) {
+            $this->showProgress($driver, $data->token);
+        }
     }
 
 
@@ -59,5 +63,6 @@ class ImportCommand extends AbstractCommand
         $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of import.', 'xlswriter');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of import.');
         $this->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'The file path of import.');
+        $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress path of import.', true);
     }
 }

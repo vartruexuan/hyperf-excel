@@ -13,6 +13,7 @@ namespace Vartruexuan\HyperfExcel;
 
 use Vartruexuan\HyperfExcel\Command\ExportCommand;
 use Vartruexuan\HyperfExcel\Command\ImportCommand;
+use Vartruexuan\HyperfExcel\Command\MessageCommand;
 use Vartruexuan\HyperfExcel\Command\ProgressCommand;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
@@ -30,6 +31,7 @@ class ConfigProvider
                 ExportCommand::class,
                 ImportCommand::class,
                 ProgressCommand::class,
+                MessageCommand::class
             ],
             'listeners' => [
                 ProgressListener::class,
