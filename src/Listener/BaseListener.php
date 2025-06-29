@@ -29,6 +29,7 @@ use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\BeforeImportExcel;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
 use Vartruexuan\HyperfExcel\Event\Error;
+use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 
 /**
  * 监听输出日志
@@ -36,10 +37,12 @@ use Vartruexuan\HyperfExcel\Event\Error;
 abstract class BaseListener implements ListenerInterface
 {
     protected ContainerInterface $container;
+    protected LoggerInterface $logger;
 
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, ExcelLoggerInterface $logger)
     {
         $this->container = $container;
+        $this->logger = $logger->getLogger();
     }
 
     public function listen(): array

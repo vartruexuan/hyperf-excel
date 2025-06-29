@@ -42,7 +42,7 @@ abstract class BaseJob extends Job
     public function fail(\Throwable $e): void
     {
         $driver = $this->getDriver();
-        $driver->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
+        //$driver->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
         $driver->event->dispatch(new Error($this->config, $driver, $e));
     }
 

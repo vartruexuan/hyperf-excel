@@ -55,7 +55,6 @@ abstract class Driver implements DriverInterface
         $this->event = $container->get(EventDispatcherInterface::class);
         $this->queue = $this->container->get(DriverFactory::class)->get($this->config['queue']['name'] ?? 'default');
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($this->config['filesystem']['storage'] ?? 'local');
-        $this->logger = $this->container->get(LoggerFactory::class)->get($this->config['logger']['name'] ?? 'hyperf-excel');
     }
 
     public function export(ExportConfig $config): ExportData
@@ -87,7 +86,6 @@ abstract class Driver implements DriverInterface
             throw $exception;
         } catch (\Throwable $throwable) {
             $this->event->dispatch(new Error($config, $this, $throwable));
-            $this->logger->error('export error:' . $throwable->getMessage(), ['exception' => $throwable]);
             throw $throwable;
         }
     }
@@ -124,7 +122,6 @@ abstract class Driver implements DriverInterface
         } catch (\Throwable $throwable) {
 
             $this->event->dispatch(new Error($config, $this, $throwable));
-            $this->logger->error('export error:' . $throwable->getMessage(), ['exception' => $throwable]);
             throw $throwable;
         }
 

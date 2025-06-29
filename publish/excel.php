@@ -10,9 +10,6 @@ return [
         ]
     ],
     'options' => [
-        'logger' => [
-            'name' => 'hyperf-excel',
-        ],
         // filesystem 配置
         'filesystem' => [
             'storage' => 'local', // 默认本地
@@ -32,12 +29,16 @@ return [
         ],
 
     ],
+    'logger' => [
+        'name' => 'hyperf-excel',
+    ],
     // 进度处理
     'progress' => [
         'enable' => true,
         'prefix' => 'HyperfExcel',
         'expire' => 3600, // 数据失效时间
     ],
+    // db日志
     'dbLog' => [
         'enable' => true,
         'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,

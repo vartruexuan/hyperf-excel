@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace Vartruexuan\HyperfExcel;
 
 use Vartruexuan\HyperfExcel\Command\ExportCommand;
@@ -19,6 +20,8 @@ use Vartruexuan\HyperfExcel\Db\ExcelLogInterface;
 use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Listener\ProgressListener;
+use Vartruexuan\HyperfExcel\Logger\ExcelLogger;
+use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 use Vartruexuan\HyperfExcel\Process\CleanFileProcess;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
@@ -32,7 +35,8 @@ class ConfigProvider
                 DriverInterface::class => ExcelInvoker::class,
                 ProgressInterface::class => Progress::class,
                 ExcelLogInterface::class => ExcelLogManager::class,
-                ExcelInterface::class => Excel::class
+                ExcelInterface::class => Excel::class,
+                ExcelLoggerInterface::class => ExcelLogger::class,
             ],
             'commands' => [
                 ExportCommand::class,
