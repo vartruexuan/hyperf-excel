@@ -34,16 +34,17 @@ return [
             // 导出文件地址构建策略
             'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeStrategy::class,
         ],
-        // 进度处理
-        'progress' => [
-            'enable' => true,
-            'prefix' => 'HyperfExcel',
-            'expire' => 3600, // 数据失效时间
-        ],
-        'dbLog' => [
-            'enable' => true,
-            'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,
-        ],
+
+    ],
+    // 进度处理
+    'progress' => [
+        'enable' => true,
+        'prefix' => 'HyperfExcel',
+        'expire' => 3600, // 数据失效时间
+    ],
+    'dbLog' => [
+        'enable' => true,
+        'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,
     ],
     // 清除临时文件
     'cleanTempFile' => [

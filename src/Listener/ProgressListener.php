@@ -16,20 +16,26 @@ use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Event\Event;
-use Vartruexuan\HyperfExcel\Progress\Progress;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
+use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 
 class ProgressListener extends BaseListener
 {
+    protected ProgressInterface $progress;
 
-    protected Progress $progress;
+    public function __construct(ContainerInterface $container, ProgressInterface $progress)
+    {
+        parent::__construct($container);
+
+        $this->progress = $progress;
+    }
 
     public function process(object $event): void
     {
         /**
          * @var Event $event
          */
-        $enable = $event->driver->getConfig()['progress']['enable'] ?? true;
+        $enable = $this->progress->getConfig()['progress']['enable'] ?? true;
         if (!$enable || !$event->config->getIsProgress()) {
             return;
         }
@@ -41,7 +47,7 @@ class ProgressListener extends BaseListener
         /**
          * @var BeforeExport $event
          */
-        $event->driver->progress->initRecord($event->config);
+        $this->progress->initRecord($event->config);
     }
 
     function beforeExportExcel(object $event)
@@ -54,7 +60,7 @@ class ProgressListener extends BaseListener
         /**
          * @var BeforeExportData $event
          */
-        $event->driver->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
             'total' => $event->exportCallbackParam->totalCount,
             'status' => ProgressData::PROGRESS_STATUS_PROCESS,
         ]));
@@ -65,7 +71,7 @@ class ProgressListener extends BaseListener
         /**
          * @var BeforeExportSheet $event
          */
-        $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_PROCESS,
         ]));
     }
@@ -75,11 +81,11 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterExport $event
          */
-        $record = $event->driver->progress->getRecord($event->config);
+        $record = $this->progress->getRecord($event->config);
 
         $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
         $data = $event->data ?: $record->data;
-        $event->driver->progress->setProgress($event->config, new ProgressData([
+        $this->progress->setProgress($event->config, new ProgressData([
             'status' => $status,
         ]), $data);
     }
@@ -90,7 +96,7 @@ class ProgressListener extends BaseListener
          * @var AfterExportData $event
          */
         $success = count($event->data ?? []);
-        $event->driver->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->exportCallbackParam->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_PROCESS,
             'success' => $success,
             'progress' => $success,
@@ -108,7 +114,7 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterExportSheet $event
          */
-        $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_END,
         ]));
     }
@@ -119,7 +125,7 @@ class ProgressListener extends BaseListener
         /**
          * @var BeforeImport $event
          */
-        $event->driver->progress->initRecord($event->config);
+        $this->progress->initRecord($event->config);
     }
 
     function beforeImportExcel(object $event)
@@ -137,7 +143,7 @@ class ProgressListener extends BaseListener
         /**
          * @var BeforeImportSheet $event
          */
-        $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_PROCESS,
         ]));
     }
@@ -147,11 +153,11 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterImport $event
          */
-        $record = $event->driver->progress->getRecord($event->config);
+        $record = $this->progress->getRecord($event->config);
 
         $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
         $data = $event->data ?: $record->data;
-        $event->driver->progress->setProgress($event->config, new ProgressData([
+        $this->progress->setProgress($event->config, new ProgressData([
             'status' => $status,
         ]), $data);
     }
@@ -161,7 +167,7 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterImportData $event
          */
-        $event->driver->progress->setSheetProgress($event->config, $event->importCallbackParam->sheet->name, new ProgressData([
+        $this->progress->setSheetProgress($event->config, $event->importCallbackParam->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_PROCESS,
             'progress' => 1,
             'success' => $event->exception ? 0 : 1,
@@ -169,7 +175,7 @@ class ProgressListener extends BaseListener
 
         ]));
         if ($event->exception) {
-            $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
+            $this->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
         }
     }
 
@@ -183,8 +189,8 @@ class ProgressListener extends BaseListener
         /**
          * @var AfterImportSheet $event
          */
-        $record = $event->driver->progress->getRecord($event->config);
-        $event->driver->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
+        $record = $this->progress->getRecord($event->config);
+        $this->progress->setSheetProgress($event->config, $event->sheet->name, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_END,
             'total' => $record->sheetListProgress[$event->sheet->name]?->progress,
         ]));
@@ -195,9 +201,9 @@ class ProgressListener extends BaseListener
         /**
          * @var Error $event
          */
-        $event->driver->progress->setProgress($event->config, new ProgressData([
+        $this->progress->setProgress($event->config, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_FAIL,
         ]));
-        $event->driver->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
+        $this->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
     }
 }

@@ -4,28 +4,34 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Db;
 
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Database\Model\Model;
 use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
-use Vartruexuan\HyperfExcel\Db\Model\ExcelLog;
+use Vartruexuan\HyperfExcel\Db\Model\ExcelLog as ExcelLogModel;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
+use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
 
-class ExcelLogManager
+class ExcelLogManager implements ExcelLogInterface
 {
     public string $model;
     public const TYPE_EXPORT = 'export';
     public const TYPE_IMPORT = 'import';
+    protected array $config;
 
-
-    public function __construct(protected ContainerInterface $container, protected array $config, protected Driver $driver)
+    public function __construct(protected ContainerInterface $container, protected ProgressInterface $progress)
     {
-        $this->model = $this->config['model'] ?? ExcelLog::class;
+        $config = $this->container->get(ConfigInterface::class);
+        $this->config = $config->get('excel.dbLog', [
+            'enable' => true,
+            'model' => \Vartruexuan\HyperfExcel\Db\Model\ExcelLog::class,
+        ]);
+        $this->model = $this->config['model'] ?? ExcelLogModel::class;
     }
-
 
     /**
      * 保存记录信息
@@ -72,7 +78,12 @@ class ExcelLogManager
      */
     public function getProgressByToken(string $token): ?ProgressRecord
     {
-        return $this->driver->progress->getRecordByToken($token);
+        return $this->progress->getRecordByToken($token);
+    }
+
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 
 }

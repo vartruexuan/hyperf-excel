@@ -2,6 +2,11 @@
 
 namespace Vartruexuan\HyperfExcel\Progress;
 
+use Hyperf\Codec\Packer\PhpSerializerPacker;
+use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\PackerInterface;
+use Hyperf\Redis\RedisFactory;
+use Hyperf\Redis\RedisProxy;
 use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\BaseObject;
@@ -9,8 +14,24 @@ use Vartruexuan\HyperfExcel\Driver\Driver;
 
 class Progress implements ProgressInterface
 {
-    public function __construct(protected ContainerInterface $container, protected array $config, protected Driver $driver)
+    protected RedisProxy $redis;
+    protected PackerInterface $packer;
+    protected array $config;
+
+    public function __construct(protected ContainerInterface $container)
     {
+        $config = $container->get(ConfigInterface::class);
+        $this->config = $config->get('excel.progress', [
+            'enable' => true,
+            'prefix' => 'HyperfExcel',
+            'expire' => 3600, // 数据失效时间
+            'redis' => [
+                'pool' => 'default',
+            ]
+        ]);
+        $this->redis = $this->container->get(RedisFactory::class)->get($this->config['redis']['pool'] ?? 'default');
+        $this->packer = $container->get(PhpSerializerPacker::class);
+
     }
 
     /**
@@ -124,15 +145,15 @@ class Progress implements ProgressInterface
     public function pushMessage(string $token, string $message)
     {
         $key = $this->getMessageKey($token);
-        $this->driver->redis->lpush($key, $message);
-        $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
+        $this->redis->lpush($key, $message);
+        $this->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
     public function popMessage(string $token, int $num): array
     {
         $messages = [];
         for ($i = 0; $i < $num; $i++) {
-            if ($message = $this->driver->redis->rpop($this->getMessageKey($token))) {
+            if ($message = $this->redis->rpop($this->getMessageKey($token))) {
                 $messages[] = $message;
             }
         }
@@ -142,7 +163,7 @@ class Progress implements ProgressInterface
     protected function setProgressStatus(ProgressRecord $progressRecord)
     {
         $total = 0;
-        $status = array_map(function ($item)use(&$total) {
+        $status = array_map(function ($item) use (&$total) {
             $total += $item->total;
             return $item->status;
         }, $progressRecord->sheetListProgress);
@@ -161,17 +182,17 @@ class Progress implements ProgressInterface
     protected function set(string $token, ProgressRecord $progressRecord)
     {
         $key = $this->getProgressKey($token);
-        $this->driver->redis->set($key, $this->driver->packer->pack($progressRecord));
-        $this->driver->redis->expire($key, intval($this->config['expire'] ?? 3600));
+        $this->redis->set($key, $this->packer->pack($progressRecord));
+        $this->redis->expire($key, intval($this->config['expire'] ?? 3600));
     }
 
     protected function get(string $token): ?ProgressRecord
     {
-        $record = $this->driver->redis->get($this->getProgressKey($token));
+        $record = $this->redis->get($this->getProgressKey($token));
         if (!$record) {
             return null;
         }
-        return $this->driver->packer->unpack($record);
+        return $this->packer->unpack($record);
     }
 
     protected function getProgressKey(string $token): string
@@ -182,6 +203,11 @@ class Progress implements ProgressInterface
     protected function getMessageKey(string $token): string
     {
         return sprintf('%s_message:%s', $this->config['prefix'] ?? 'HyperfExcel', $token);
+    }
+
+    public function getConfig()
+    {
+        return $this->config;
     }
 
 }

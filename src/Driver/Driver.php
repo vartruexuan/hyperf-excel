@@ -40,7 +40,6 @@ use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
-use Vartruexuan\HyperfExcel\Progress\Progress;
 use function Hyperf\Support\make;
 use Hyperf\Coroutine\Coroutine;
 
@@ -50,27 +49,14 @@ abstract class Driver implements DriverInterface
     public Redis $redis;
     public Filesystem $filesystem;
     public QueueDriverInterface $queue;
-    public PackerInterface $packer;
     public LoggerInterface $logger;
-    public Progress $progress;
-    public ExcelLogManager $dbLog;
 
     public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
         $this->event = $container->get(EventDispatcherInterface::class);
-        $this->redis = $this->container->get(RedisFactory::class)->get($this->config['redis']['pool'] ?? 'default');
         $this->queue = $this->container->get(DriverFactory::class)->get($this->config['queue']['name'] ?? 'default');
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($this->config['filesystem']['storage'] ?? 'local');
         $this->logger = $this->container->get(LoggerFactory::class)->get($this->config['logger']['name'] ?? 'hyperf-excel');
-        $this->packer = $container->get(PhpSerializerPacker::class);
-        $this->progress = make(Progress::class, [
-            'config' => $this->config['progress'] ?? [],
-            'driver' => $this,
-        ]);
-        $this->dbLog = make(ExcelLogManager::class, [
-            'config' => $this->config['dbLog'] ?? [],
-            'driver' => $this,
-        ]);
     }
 
     public function export(ExportConfig $config): ExportData
