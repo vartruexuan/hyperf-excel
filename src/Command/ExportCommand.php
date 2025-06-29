@@ -37,7 +37,7 @@ class ExportCommand extends AbstractCommand
             return 0;
         }
         /**
-         * @var ImportConfig $config
+         * @var ExportConfig $config
          */
         $config = new $config([]);
         if (!$config instanceof ExportConfig) {
@@ -55,9 +55,12 @@ class ExportCommand extends AbstractCommand
 
     protected function configure()
     {
-        $this->setDescription('Run import');
+        $this->setDescription('Run export');
         $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of export.', 'xlswriter');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of export.');
         $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress of export.', true);
+
+        $this->addUsage('excel:export --config "App\Excel\DemoExportConfig"');
+        $this->addUsage('excel:export --config "App\Excel\DemoExportConfig" --no-progress');
     }
 }

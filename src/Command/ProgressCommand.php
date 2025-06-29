@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Command;
 
-use \Closure;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
-use Vartruexuan\HyperfExcel\Progress\ProgressData;
 
 class ProgressCommand extends AbstractCommand
 {
@@ -45,9 +42,11 @@ class ProgressCommand extends AbstractCommand
 
     protected function configure()
     {
-        $this->setDescription('Run progress');
+        $this->setDescription('View progress information');
         $this->addArgument('token', InputArgument::REQUIRED, 'The token of excel.');
         $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of excel.', 'xlswriter');
-    }
 
+        $this->addUsage('excel:progress 168d8baf7fbc435c8ef18239e932b101');
+
+    }
 }

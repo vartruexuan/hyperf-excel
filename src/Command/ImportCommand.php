@@ -56,7 +56,6 @@ class ImportCommand extends AbstractCommand
         }
     }
 
-
     protected function configure()
     {
         $this->setDescription('Run import');
@@ -64,5 +63,9 @@ class ImportCommand extends AbstractCommand
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'The config of import.');
         $this->addOption('path', 'p', InputOption::VALUE_REQUIRED, 'The file path of import.');
         $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress path of import.', true);
+
+        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="https://xxx.com/demo.xlsx"');
+        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="/excel/demo.xlsx"');
+        $this->addUsage('excel:import --config "App\Excel\DemoImportConfig" --path="/excel/demo.xlsx" --no-progress');
     }
 }

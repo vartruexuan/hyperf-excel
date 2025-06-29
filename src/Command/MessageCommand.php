@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Vartruexuan\HyperfExcel\Command;
 
 use Psr\Container\ContainerInterface;
@@ -64,10 +66,12 @@ class MessageCommand extends AbstractCommand
 
     protected function configure()
     {
-        $this->setDescription('Run progress');
+        $this->setDescription('View progress messages');
         $this->addArgument('token', InputArgument::REQUIRED, 'The token of excel.');
         $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of excel.', 'xlswriter');
-        $this->addOption('num', 'n', InputOption::VALUE_NEGATABLE, 'The message num of excel.', 50);
-    }
+        $this->addOption('num', 'c', InputOption::VALUE_REQUIRED, 'The message num of excel.', 50);
 
+        $this->addUsage('excel:message 168d8baf7fbc435c8ef18239e932b101');
+        $this->addUsage('excel:message 168d8baf7fbc435c8ef18239e932b101 --no-progress');
+    }
 }
