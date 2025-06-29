@@ -36,7 +36,7 @@ class ImportCommand extends AbstractCommand
          * @var Driver
          */
         if ($driver) {
-            $this->excel->serDriverByName($driver);
+            $this->excel->setDriverByName($driver);
         }
         /**
          * @var ImportConfig $config

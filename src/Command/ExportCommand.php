@@ -29,7 +29,7 @@ class ExportCommand extends AbstractCommand
         $progress = $this->input->getOption('progress');
 
         if ($driver) {
-            $this->excel->serDriverByName($driver);
+            $this->excel->setDriverByName($driver);
         }
 
         /**

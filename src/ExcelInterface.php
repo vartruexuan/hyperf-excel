@@ -27,7 +27,7 @@ interface ExcelInterface
 
     public function setDriver(DriverInterface $driver): static;
 
-    public function serDriverByName(string $driverName): static;
+    public function setDriverByName(string $driverName): static;
 
     public function getConfig(): array;
 

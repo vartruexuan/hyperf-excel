@@ -67,7 +67,7 @@ class Excel implements ExcelInterface
         return $this;
     }
 
-    public function serDriverByName(string $driverName): static
+    public function setDriverByName(string $driverName): static
     {
         $driver = $this->container->get(DriverFactory::class)->get($driverName);
         $this->setDriver($driver);
