@@ -21,6 +21,8 @@ interface ExcelInterface
 
     public function popMessage(string $token, int $num = 50): array;
 
+    public function popMessageAndIsEnd(string $token, int $num = 50, bool &$isEnd = true): array;
+
     public function pushMessage(string $token, string $message);
 
     public function getDriver(): DriverInterface;

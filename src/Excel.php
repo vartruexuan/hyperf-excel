@@ -10,6 +10,7 @@ use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+use Vartruexuan\HyperfExcel\Progress\ProgressData;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
 use function Hyperf\Config\config;
@@ -28,7 +29,6 @@ class Excel implements ExcelInterface
         $driver = $this->container->get(DriverFactory::class)->get($this->getConfig()['default']);
         $this->setDriver($driver);
         $this->progress = $progress;
-
     }
 
     public function export(ExportConfig $config): ExportData
@@ -54,6 +54,22 @@ class Excel implements ExcelInterface
     public function pushMessage(string $token, string $message)
     {
         return $this->progress->pushMessage($token, $message);
+    }
+
+    public function popMessageAndIsEnd(string $token, int $num = 50, bool &$isEnd = true): array
+    {
+        $progressRecord = $this->getProgressRecord($token);
+        $messages = $this->popMessage($token, $num);
+        $isEnd = $this->isEnd($progressRecord) && empty($messages);
+        return $messages;
+    }
+
+    public function isEnd(?ProgressRecord $progressRecord): bool
+    {
+        return empty($progressRecord) || in_array($progressRecord->progress->status, [
+                ProgressData::PROGRESS_STATUS_END,
+                ProgressData::PROGRESS_STATUS_FAIL,
+            ]);
     }
 
     public function getDriver(): DriverInterface
