@@ -6,7 +6,6 @@ namespace Vartruexuan\HyperfExcel\Command;
 
 use Hyperf\Command\Command as HyperfCommand;
 use Hyperf\Context\ApplicationContext;
-use PHPStan\Type\ThisType;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
