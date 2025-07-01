@@ -67,7 +67,7 @@ class Excel implements ExcelInterface
     public function isEnd(?ProgressRecord $progressRecord): bool
     {
         return empty($progressRecord) || in_array($progressRecord->progress->status, [
-                ProgressData::PROGRESS_STATUS_END,
+                ProgressData::PROGRESS_STATUS_COMPLETE,
                 ProgressData::PROGRESS_STATUS_FAIL,
             ]);
     }

@@ -97,7 +97,7 @@ abstract class AbstractCommand extends HyperfCommand
             $spinnerChar = $spinner[time() % count($spinner)];
 
             $status = match ($latestProgress->progress->status) {
-                ProgressData::PROGRESS_STATUS_END => '<fg=green>✔ 处理完成</>',
+                ProgressData::PROGRESS_STATUS_COMPLETE => '<fg=green>✔ 处理完成</>',
                 ProgressData::PROGRESS_STATUS_FAIL => '<fg=red>✖ 处理失败</>',
                 default => sprintf('<fg=yellow>%s 处理中...</>', $spinnerChar)
             };
@@ -126,7 +126,7 @@ abstract class AbstractCommand extends HyperfCommand
                 usleep(100000); // 0.1秒间隔
             }
         } while (!in_array($latestProgress->progress->status, [
-            ProgressData::PROGRESS_STATUS_END,
+            ProgressData::PROGRESS_STATUS_COMPLETE,
             ProgressData::PROGRESS_STATUS_FAIL,
         ]));
 

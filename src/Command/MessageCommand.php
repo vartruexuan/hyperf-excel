@@ -42,7 +42,7 @@ class MessageCommand extends AbstractCommand
                 $this->line($message);
             }
             $isEnd = in_array($progressRecord->progress->status, [
-                    ProgressData::PROGRESS_STATUS_END,
+                    ProgressData::PROGRESS_STATUS_COMPLETE,
                     ProgressData::PROGRESS_STATUS_FAIL,
                 ]) && empty($messages);
 
