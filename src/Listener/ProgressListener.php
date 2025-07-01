@@ -132,6 +132,10 @@ class ProgressListener extends BaseListener
         ]));
     }
 
+    function afterExportOutput(object $event)
+    {
+        // TODO: Implement afterExportOutput() method.
+    }
 
     function beforeImport(object $event)
     {

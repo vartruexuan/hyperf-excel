@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('service_name', 20)->default('')->comment('服务名');
             $table->json('sheet_progress')->nullable()->comment('页码进度');
             $table->json('progress')->nullable()->comment('总进度信息');
-            $table->unsignedTinyInteger('status')->default(1)->comment('状态:1.待处理2.正在处理3.处理完成4.处理失败');
+            $table->unsignedTinyInteger('status')->default(1)->comment('状态:1.待处理2.正在处理3.处理完成4.处理失败5.输出中6.完成');
             $table->json('data')->comment('数据信息');
             $table->string('remark', 500)->default('')->comment('备注');
             $table->string('url', 300)->default('')->comment('url地址');

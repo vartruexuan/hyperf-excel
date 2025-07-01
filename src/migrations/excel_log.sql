@@ -7,7 +7,7 @@ CREATE TABLE `excel_log` (
      `service_name` varchar(20) NOT NULL DEFAULT '' COMMENT '服务名',
      `sheet_progress` json DEFAULT NULL COMMENT '页码进度',
      `progress` json DEFAULT NULL COMMENT '总进度信息',
-     `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态:1.待处理2.正在处理3.处理完成4.处理失败',
+     `status` tinyint unsigned NOT NULL DEFAULT '1' COMMENT '状态:1.待处理2.正在处理3.处理完成4.处理失败5.输出中6.完成',
      `data` json NOT NULL COMMENT '数据信息',
      `remark` varchar(500) NOT NULL DEFAULT '' COMMENT '备注',
      `url` varchar(300) NOT NULL DEFAULT '' COMMENT 'url地址',
