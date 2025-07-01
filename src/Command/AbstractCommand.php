@@ -31,7 +31,7 @@ abstract class AbstractCommand extends HyperfCommand
             return;
         }
 
-        $bar = new ProgressBar($this->output,0);
+        $bar = new ProgressBar($this->output, 0);
         $bar->setFormat("
 <fg=magenta>🔄 任务进度监控</>
 %stats%
@@ -99,6 +99,7 @@ abstract class AbstractCommand extends HyperfCommand
             $status = match ($latestProgress->progress->status) {
                 ProgressData::PROGRESS_STATUS_COMPLETE => '<fg=green>✔ 处理完成</>',
                 ProgressData::PROGRESS_STATUS_FAIL => '<fg=red>✖ 处理失败</>',
+                ProgressData::PROGRESS_STATUS_OUTPUT => '<fg=green>✖ 上传中</>',
                 default => sprintf('<fg=yellow>%s 处理中...</>', $spinnerChar)
             };
 
@@ -137,10 +138,7 @@ abstract class AbstractCommand extends HyperfCommand
         if ($latestProgress->progress->status === ProgressData::PROGRESS_STATUS_FAIL) {
             $this->error('处理失败: ' . ($latestProgress->progress->message ?? '未知原因'));
         } else {
-            $totalDisplay = $latestProgress->progress->total > 0
-                ? sprintf("%d项", $latestProgress->progress->total)
-                : sprintf("%d次", $latestProgress->progress->progress);
-            $this->info('成功处理 ' . $totalDisplay . ' 任务');
+            $this->table(['token', 'response'], [[$latestProgress->data->token, $latestProgress->data?->response ?? '']]);
         }
         $this->output->newLine();
     }
