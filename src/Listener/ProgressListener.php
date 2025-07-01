@@ -11,6 +11,7 @@ use Vartruexuan\HyperfExcel\Event\AfterImportData;
 use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExportData;
+use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
 use Vartruexuan\HyperfExcel\Event\BeforeExportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportSheet;
@@ -77,6 +78,17 @@ class ProgressListener extends BaseListener
         ]));
     }
 
+    function beforeExportOutput(object $event)
+    {
+        /**
+         * @var BeforeExportOutput $event
+         */
+        $this->progress->setProgress($event->config, new ProgressData([
+            'status' => ProgressData::PROGRESS_STATUS_OUTPUT,
+        ]));
+    }
+
+
     function afterExport(object $event)
     {
         /**
@@ -84,7 +96,7 @@ class ProgressListener extends BaseListener
          */
         $record = $this->progress->getRecord($event->config);
 
-        $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
+        $status = $record->progress->status != ProgressData::PROGRESS_STATUS_FAIL ? ProgressData::PROGRESS_STATUS_COMPLETE : ProgressData::PROGRESS_STATUS_FAIL;
         $data = $event->data ?: $record->data;
         $this->progress->setProgress($event->config, new ProgressData([
             'status' => $status,
@@ -155,8 +167,7 @@ class ProgressListener extends BaseListener
          * @var AfterImport $event
          */
         $record = $this->progress->getRecord($event->config);
-
-        $status = !in_array($record->progress->status, [ProgressData::PROGRESS_STATUS_END, ProgressData::PROGRESS_STATUS_FAIL]) ? ProgressData::PROGRESS_STATUS_END : $record->progress->status;
+        $status = $record->progress->status != ProgressData::PROGRESS_STATUS_FAIL ? ProgressData::PROGRESS_STATUS_COMPLETE : ProgressData::PROGRESS_STATUS_FAIL;
         $data = $event->data ?: $record->data;
         $this->progress->setProgress($event->config, new ProgressData([
             'status' => $status,

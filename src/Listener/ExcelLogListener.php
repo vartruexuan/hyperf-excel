@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Listener;
 
+use Vartruexuan\HyperfExcel\Event\AfterExportOutput;
+use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
+
 /**
  * 监听输出日志
  */
@@ -29,6 +32,15 @@ class ExcelLogListener extends BaseListener
          $this->logger->info(sprintf('event:%s,token:%s', $this->getEventClass($event), $event->config->getToken()), ['config' => $event->config]);
     }
 
+    function beforeExportOutput(object $event)
+    {
+        /**
+         * @var BeforeExportOutput $event
+         */
+        $this->logger->info(sprintf('event:%s,token:%s', $this->getEventClass($event), $event->config->getToken()), ['config' => $event->config]);
+    }
+
+
     public function afterExport(object $event)
     {
          $this->logger->info(sprintf('event:%s,token:%s', $this->getEventClass($event), $event->config->getToken()), ['config' => $event->config]);
@@ -47,6 +59,14 @@ class ExcelLogListener extends BaseListener
     public function afterExportSheet(object $event)
     {
          $this->logger->info(sprintf('event:%s,token:%s', $this->getEventClass($event), $event->config->getToken()), ['config' => $event->config]);
+    }
+
+    function afterExportOutput(object $event)
+    {
+        /**
+         * @var AfterExportOutput $event
+         */
+        $this->logger->info(sprintf('event:%s,token:%s', $this->getEventClass($event), $event->config->getToken()), ['config' => $event->config]);
     }
 
     public function afterImport(object $event)

@@ -28,10 +28,12 @@ use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
 use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
+use Vartruexuan\HyperfExcel\Event\AfterExportOutput;
 use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExportData;
+use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\Error;
@@ -76,7 +78,11 @@ abstract class Driver implements DriverInterface
 
             $path = $this->exportExcel($config);
 
+            $this->event->dispatch(new BeforeExportOutput($config, $this));
+
             $exportData->response = $this->exportOutPut($config, $path);
+
+            $this->event->dispatch(new AfterExportOutput($config, $this));
 
             $this->event->dispatch(new AfterExport($config, $this, $exportData));
 

@@ -8,10 +8,12 @@ use Psr\Container\ContainerInterface;
 use Vartruexuan\HyperfExcel\Db\ExcelLogInterface;
 use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\AfterExportOutput;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
 use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\Event;
 use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
@@ -65,6 +67,14 @@ class ExcelLogDbListener extends BaseListener
         // TODO: Implement beforeExportSheet() method.
     }
 
+    function beforeExportOutput(object $event)
+    {
+        /**
+         * @var BeforeExportOutput $event
+         */
+        $this->excelLog->saveLog($event->config);
+    }
+
     function afterExport(object $event)
     {
         /**
@@ -89,6 +99,10 @@ class ExcelLogDbListener extends BaseListener
          * @var AfterExportSheet $event
          */
         $this->excelLog->saveLog($event->config);
+    }
+
+    function afterExportOutput(object $event)
+    {
     }
 
     function beforeImport(object $event)

@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterExportExcel;
+use Vartruexuan\HyperfExcel\Event\AfterExportOutput;
 use Vartruexuan\HyperfExcel\Event\AfterExportSheet;
 use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
@@ -23,6 +24,7 @@ use Vartruexuan\HyperfExcel\Event\AfterImportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExportData;
 use Vartruexuan\HyperfExcel\Event\BeforeExportExcel;
+use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
 use Vartruexuan\HyperfExcel\Event\BeforeExportSheet;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportData;
@@ -53,11 +55,13 @@ abstract class BaseListener implements ListenerInterface
             BeforeExportExcel::class,
             BeforeExportData::class,
             BeforeExportSheet::class,
+            BeforeExportOutput::class,
 
             AfterExport::class,
             AfterExportData::class,
             AfterExportExcel::class,
             AfterExportSheet::class,
+            AfterExportOutput::class,
 
             // 导入
             BeforeImport::class,
@@ -99,6 +103,8 @@ abstract class BaseListener implements ListenerInterface
 
     abstract function beforeExportSheet(object $event);
 
+    abstract function beforeExportOutput(object $event);
+
     abstract function afterExport(object $event);
 
     abstract function afterExportData(object $event);
@@ -106,6 +112,8 @@ abstract class BaseListener implements ListenerInterface
     abstract function afterExportExcel(object $event);
 
     abstract function afterExportSheet(object $event);
+
+    abstract function afterExportOutput(object $event);
 
     abstract function beforeImport(object $event);
 
