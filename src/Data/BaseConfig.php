@@ -14,6 +14,12 @@ abstract class BaseConfig extends BaseObject
     public string $serviceName = 'default';
 
     /**
+     * 驱动(未指定默认驱动)
+     * @var string
+     */
+    public string $driver = '';
+
+    /**
      * 是否异步
      *
      * @var bool

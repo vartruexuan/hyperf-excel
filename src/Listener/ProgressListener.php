@@ -36,7 +36,7 @@ class ProgressListener extends BaseListener
         /**
          * @var Event $event
          */
-        $enable = $this->progress->getConfig()['progress']['enable'] ?? true;
+        $enable = $this->progress->getConfig()['enable'] ?? true;
         if (!$enable || !$event->config->getIsProgress()) {
             return;
         }
@@ -204,6 +204,7 @@ class ProgressListener extends BaseListener
          */
         $this->progress->setProgress($event->config, new ProgressData([
             'status' => ProgressData::PROGRESS_STATUS_FAIL,
+            'message' => $event->exception->getMessage(),
         ]));
         $this->progress->pushMessage($event->config->getToken(), $event->exception->getMessage());
     }

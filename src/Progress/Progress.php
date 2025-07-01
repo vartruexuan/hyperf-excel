@@ -135,6 +135,9 @@ class Progress implements ProgressInterface
         if ($progressData->fail > 0) {
             $progressRecord->progress->fail += $progressData->progress;
         }
+        if (!empty($progressData->message)) {
+            $progressRecord->progress->message = $progressData->message;
+        }
         if ($data) {
             $progressRecord->data = $data;
         }
@@ -144,9 +147,7 @@ class Progress implements ProgressInterface
 
     public function pushMessage(string $token, string $message)
     {
-        $key = $this->getMessageKey($token);
-        $this->redis->lpush($key, $message);
-        $this->redis->expire($key, intval($this->config['expire'] ?? 3600));
+        $this->lpush($this->getMessageKey($token), $message, intval($this->config['expire'] ?? 3600));
     }
 
     public function popMessage(string $token, int $num): array
@@ -179,11 +180,20 @@ class Progress implements ProgressInterface
         return $progressRecord;
     }
 
+    protected function lpush(string $key, string $value, int $expire)
+    {
+        $luaScript = <<<LUA
+        redis.call('LPUSH', KEYS[1], ARGV[1])
+        redis.call('EXPIRE', KEYS[1], ARGV[2])
+        return 1
+LUA;
+        $this->redis->eval($luaScript, [$key, $value, $expire], 1);
+    }
+
     protected function set(string $token, ProgressRecord $progressRecord)
     {
         $key = $this->getProgressKey($token);
-        $this->redis->set($key, $this->packer->pack($progressRecord));
-        $this->redis->expire($key, intval($this->config['expire'] ?? 3600));
+        $this->redis->set($key, $this->packer->pack($progressRecord), ['EX' => intval($this->config['expire'] ?? 3600)]);
     }
 
     protected function get(string $token): ?ProgressRecord

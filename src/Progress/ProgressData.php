@@ -21,4 +21,6 @@ class ProgressData extends BaseObject
     public int $fail = 0;
 
     public int $status = self::PROGRESS_STATUS_AWAIT;
+
+    public string $message = '';
 }
