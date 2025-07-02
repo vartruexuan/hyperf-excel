@@ -72,7 +72,7 @@ abstract class Driver implements DriverInterface
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
                     throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
                 }
-                $this->pushQueue(new $this->config['queue']['jobs']['export']($this->name, $config));
+                $this->pushQueue(new $this->config['queue']['jobs']['export']($config));
                 return $exportData;
             }
 
@@ -110,7 +110,7 @@ abstract class Driver implements DriverInterface
                 if ($config->isReturnSheetData) {
                     throw new ExcelException('Asynchronous does not support returning sheet data');
                 }
-                $this->pushQueue(new $this->config['queue']['jobs']['import']($this->name, $config));
+                $this->pushQueue(new $this->config['queue']['jobs']['import']($config));
                 return $importData;
             }
             $config->setTempPath($this->fileToTemp($config->getPath()));
