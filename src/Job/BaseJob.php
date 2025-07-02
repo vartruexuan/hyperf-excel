@@ -11,21 +11,15 @@ use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Event\Error;
+use Vartruexuan\HyperfExcel\ExcelInterface;
 
 abstract class BaseJob extends Job
 {
-    /**
-     * 驱动名
-     *
-     * @var string
-     */
-    public string $driverName = 'default';
     public BaseConfig $config;
     protected int $maxAttempts = 0;
 
-    public function __construct(string $driverName, BaseConfig $config)
+    public function __construct(BaseConfig $config)
     {
-        $this->driverName = $driverName;
         $this->config = $config;
     }
 
@@ -34,9 +28,17 @@ abstract class BaseJob extends Job
         return ApplicationContext::getContainer();
     }
 
-    protected function getDriver(): Driver
+    protected function getDriver(): ExcelInterface
     {
-        return $this->getContainer()->get(DriverFactory::class)->get($this->driverName);
+        /**
+         * @var ExcelInterface $excel
+         */
+        $excel = $this->getContainer()->get(ExcelInterface::class);
+        $driver = $this->config->getDriver();
+        if (empty($driver)) {
+            $excel->setDriverByName($driver);
+        }
+        return $excel;
     }
 
     public function fail(\Throwable $e): void

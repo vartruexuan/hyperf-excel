@@ -18,17 +18,15 @@ use function Hyperf\Config\config;
 class Excel implements ExcelInterface
 {
     protected DriverInterface $driver;
-    protected ProgressInterface $progress;
     protected array $config;
 
-    public function __construct(protected ContainerInterface $container, ProgressInterface $progress)
+    public function __construct(protected ContainerInterface $container, protected ProgressInterface $progress)
     {
         $config = $container->get(ConfigInterface::class);
         $this->config = $config->get('excel', []);
 
         $driver = $this->container->get(DriverFactory::class)->get($this->getConfig()['default']);
         $this->setDriver($driver);
-        $this->progress = $progress;
     }
 
     public function export(ExportConfig $config): ExportData

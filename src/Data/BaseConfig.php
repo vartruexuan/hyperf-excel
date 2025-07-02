@@ -91,6 +91,11 @@ abstract class BaseConfig extends BaseObject
         return $this->isDbLog;
     }
 
+    public function getDriver(): string
+    {
+        return $this->driver;
+    }
+
     /**
      * 获取页配置
      *
