@@ -342,7 +342,6 @@ abstract class Driver implements DriverInterface
      */
     public function pushQueue(BaseJob $job): bool
     {
-        $job->driverName = $this->name; // 设置名
         return $this->queue->push($job);
     }
 
