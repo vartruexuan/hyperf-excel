@@ -35,7 +35,7 @@ abstract class BaseJob extends Job
          */
         $excel = $this->getContainer()->get(ExcelInterface::class);
         $driver = $this->config->getDriver();
-        if (empty($driver)) {
+        if (!empty($driver)) {
             $excel->setDriverByName($driver);
         }
         return $excel;
