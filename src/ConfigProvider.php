@@ -29,6 +29,8 @@ use Vartruexuan\HyperfExcel\Queue\AsyncQueue\ExcelQueue;
 use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
 use Vartruexuan\HyperfExcel\Strategy\Path\DateTimeExportPathStrategy;
 use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
+use Vartruexuan\HyperfExcel\Strategy\Token\TokenStrategyInterface;
+use Vartruexuan\HyperfExcel\Strategy\Token\UuidStrategy;
 
 class ConfigProvider
 {
@@ -42,7 +44,8 @@ class ConfigProvider
                 ExcelInterface::class => Excel::class,
                 ExcelLoggerInterface::class => ExcelLogger::class,
                 ExcelQueueInterface::class => ExcelQueue::class,
-                ExportPathStrategyInterface::class => DateTimeExportPathStrategy::class
+                ExportPathStrategyInterface::class => DateTimeExportPathStrategy::class,
+                TokenStrategyInterface::class => UuidStrategy::class
             ],
             'commands' => [
                 ExportCommand::class,

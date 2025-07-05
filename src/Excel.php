@@ -22,6 +22,7 @@ use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
 use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Vartruexuan\HyperfExcel\Strategy\Token\TokenStrategyInterface;
 
 class Excel implements ExcelInterface
 {
@@ -159,7 +160,7 @@ class Excel implements ExcelInterface
      */
     protected function buildToken(): string
     {
-        return Helper::uuid4();
+        return $this->container->get(TokenStrategyInterface::class)->getToken();
     }
 
     public function getConfig(): array

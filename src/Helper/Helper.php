@@ -13,9 +13,9 @@ class Helper
     /**
      * 获取uuid4
      *
-     * @return void
+     * @return string
      */
-    public static function uuid4()
+    public static function uuid4():string
     {
         return Uuid::uuid4()->getHex()->toString();
     }
