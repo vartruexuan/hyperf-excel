@@ -31,11 +31,19 @@ class Excel implements ExcelInterface
 
     public function export(ExportConfig $config): ExportData
     {
+        $driver = $this->config->getDriver();
+        if (!empty($driver)) {
+            $this->setDriverByName($driver);
+        }
         return $this->getDriver()->export($config);
     }
 
     public function import(ImportConfig $config): ImportData
     {
+        $driver = $this->config->getDriver();
+        if (!empty($driver)) {
+            $this->setDriverByName($driver);
+        }
         return $this->getDriver()->import($config);
     }
 
