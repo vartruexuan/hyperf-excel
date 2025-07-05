@@ -31,7 +31,7 @@ class Excel implements ExcelInterface
 
     public function export(ExportConfig $config): ExportData
     {
-        $driver = $this->config->getDriver();
+        $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
@@ -40,7 +40,7 @@ class Excel implements ExcelInterface
 
     public function import(ImportConfig $config): ImportData
     {
-        $driver = $this->config->getDriver();
+        $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
