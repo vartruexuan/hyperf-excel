@@ -42,6 +42,8 @@ use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
+use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
+use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
 use function Hyperf\Support\make;
 use Hyperf\Coroutine\Coroutine;
 
@@ -49,13 +51,10 @@ abstract class Driver implements DriverInterface
 {
     public EventDispatcherInterface $event;
     public Filesystem $filesystem;
-    public QueueDriverInterface $queue;
-    public LoggerInterface $logger;
 
     public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
     {
         $this->event = $container->get(EventDispatcherInterface::class);
-        $this->queue = $this->container->get(DriverFactory::class)->get($this->config['queue']['name'] ?? 'default');
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($this->config['filesystem']['storage'] ?? 'local');
     }
 
@@ -72,7 +71,7 @@ abstract class Driver implements DriverInterface
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
                     throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
                 }
-                $this->pushQueue(new $this->config['queue']['jobs']['export']($config));
+                $this->pushQueue($config);
                 return $exportData;
             }
 
@@ -110,7 +109,7 @@ abstract class Driver implements DriverInterface
                 if ($config->isReturnSheetData) {
                     throw new ExcelException('Asynchronous does not support returning sheet data');
                 }
-                $this->pushQueue(new $this->config['queue']['jobs']['import']($config));
+                $this->pushQueue($config);
                 return $importData;
             }
             $config->setTempPath($this->fileToTemp($config->getPath()));
@@ -337,12 +336,12 @@ abstract class Driver implements DriverInterface
     /**
      * 推送队列
      *
-     * @param BaseJob $job
+     * @param BaseConfig $config
      * @return bool
      */
-    public function pushQueue(BaseJob $job): bool
+    public function pushQueue(BaseConfig $config): bool
     {
-        return $this->queue->push($job);
+        return $this->container->get(ExcelQueueInterface::class)->push($config);
     }
 
     /**
@@ -363,7 +362,11 @@ abstract class Driver implements DriverInterface
      */
     protected function buildExportPath(ExportConfig $config)
     {
-        return $this->config['export']['rootDir'] . DIRECTORY_SEPARATOR . (new $this->config['export']['pathStrategy'])->getPath($config);
+        $strategy = $this->container->get(ExportPathStrategyInterface::class);
+        return implode(DIRECTORY_SEPARATOR, array_filter([
+            $this->config['export']['rootDir'] ?? null,
+            $strategy->getPath($config),
+        ]));
     }
 
     /**

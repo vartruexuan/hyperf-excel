@@ -25,6 +25,10 @@ use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 use Vartruexuan\HyperfExcel\Process\CleanFileProcess;
 use Vartruexuan\HyperfExcel\Progress\Progress;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
+use Vartruexuan\HyperfExcel\Queue\AsyncQueue\ExcelQueue;
+use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
+use Vartruexuan\HyperfExcel\Strategy\Path\DateTimeExportPathStrategy;
+use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
 
 class ConfigProvider
 {
@@ -37,6 +41,8 @@ class ConfigProvider
                 ExcelLogInterface::class => ExcelLogManager::class,
                 ExcelInterface::class => Excel::class,
                 ExcelLoggerInterface::class => ExcelLogger::class,
+                ExcelQueueInterface::class => ExcelQueue::class,
+                ExportPathStrategyInterface::class => DateTimeExportPathStrategy::class
             ],
             'commands' => [
                 ExportCommand::class,

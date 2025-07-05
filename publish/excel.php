@@ -25,7 +25,7 @@ return [
         'export' => [
             'rootDir' => 'export',
             // 导出文件地址构建策略
-            'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeStrategy::class,
+            'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeExportPathStrategy::class,
         ],
 
     ],
