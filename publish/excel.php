@@ -47,6 +47,6 @@ return [
     'cleanTempFile' => [
         'enable' => true, // 是否允许
         'time' => 1800, // 文件未操作时间(秒)
-        'interval' => 1800,// 间隔检查时间
+        'interval' => 3600,// 间隔检查时间
     ],
 ];
