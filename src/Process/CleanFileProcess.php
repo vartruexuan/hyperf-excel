@@ -51,7 +51,7 @@ class CleanFileProcess extends AbstractProcess
                 try {
                     $driver = $this->container->get(DriverFactory::class)->get($key);
                     $dir = $driver->getTempDir();
-                    if (in_array($dir, $dirs)) {
+                    if (!$dir || !is_dir($dir) || in_array($dir, $dirs)) {
                         continue;
                     }
                     $this->cleanTempFile($dir);
