@@ -40,6 +40,10 @@ class Excel implements ExcelInterface
 
     public function export(ExportConfig $config): ExportData
     {
+        if (empty($config->getToken())) {
+            $config->setToken($this->buildToken());
+        }
+
         $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
@@ -64,6 +68,10 @@ class Excel implements ExcelInterface
 
     public function import(ImportConfig $config): ImportData
     {
+        if (empty($config->getToken())) {
+            $config->setToken($this->buildToken());
+        }
+
         $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
@@ -132,21 +140,6 @@ class Excel implements ExcelInterface
         $this->setDriver($driver);
         return $this;
     }
-
-    /**
-     * 构建配置
-     *
-     * @param BaseConfig $config
-     * @return BaseConfig
-     */
-    public function formatConfig(BaseConfig $config)
-    {
-        if (empty($config->getToken())) {
-            $config->setToken($this->buildToken());
-        }
-        return $config;
-    }
-
 
     /**
      * 推送队列
