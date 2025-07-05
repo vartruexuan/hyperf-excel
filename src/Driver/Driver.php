@@ -18,23 +18,17 @@ use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam;
-use Vartruexuan\HyperfExcel\Db\ExcelLogManager;
-use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterExportData;
 use Vartruexuan\HyperfExcel\Event\AfterExportOutput;
-use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\AfterImportData;
-use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeExportData;
 use Vartruexuan\HyperfExcel\Event\BeforeExportOutput;
-use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
@@ -43,7 +37,6 @@ use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
-use function Hyperf\Support\make;
 use Hyperf\Coroutine\Coroutine;
 
 abstract class Driver implements DriverInterface
@@ -106,7 +99,6 @@ abstract class Driver implements DriverInterface
         return $importData;
     }
 
-
     /**
      * 文件to临时文件
      *
@@ -121,7 +113,7 @@ abstract class Driver implements DriverInterface
         if (!Helper::isUrl($path)) {
             // 本地文件
             if (!is_file($path)) {
-                throw new ExcelException('File not exists');
+                throw new ExcelException(sprintf('File not exists[%s]', $path));
             }
             if (!copy($path, $filePath)) {
                 throw new ExcelException('File copy error');
@@ -144,7 +136,7 @@ abstract class Driver implements DriverInterface
     public function getTempFileName(): string
     {
         if (!$filePath = Helper::getTempFileName($this->getTempDir(), 'ex_')) {
-            throw new ExcelException('构建临时文件失败');
+            throw new ExcelException('Failed to build temporary file');
         }
         return $filePath;
     }
@@ -160,7 +152,7 @@ abstract class Driver implements DriverInterface
         $dir = Helper::getTempDir() . DIRECTORY_SEPARATOR . 'hyperf-excel';
         if (!is_dir($dir)) {
             if (!mkdir($dir, 0777, true)) {
-                throw new ExcelException('构建临时目录失败');
+                throw new ExcelException('Failed to build temporary directory');
             }
         }
         return $dir;
@@ -278,8 +270,6 @@ abstract class Driver implements DriverInterface
         }
     }
 
-
-
     protected function deleteFile($filePath)
     {
         $callback = function () use ($filePath) {
@@ -293,7 +283,6 @@ abstract class Driver implements DriverInterface
             $callback();
         }
     }
-
 
     /**
      * 构建导出地址
@@ -323,6 +312,4 @@ abstract class Driver implements DriverInterface
     abstract function exportExcel(ExportConfig $config): string;
 
     abstract function importExcel(ImportConfig $config): array|null;
-
-
 }
