@@ -4,19 +4,28 @@ namespace Vartruexuan\HyperfExcel;
 
 use Hyperf\Contract\ConfigInterface;
 use Psr\Container\ContainerInterface;
+use Vartruexuan\HyperfExcel\Data\BaseConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\ExportData;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Data\Import\ImportData;
 use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Driver\DriverInterface;
+use Vartruexuan\HyperfExcel\Event\AfterExport;
+use Vartruexuan\HyperfExcel\Event\AfterImport;
+use Vartruexuan\HyperfExcel\Event\BeforeExport;
+use Vartruexuan\HyperfExcel\Event\BeforeImport;
+use Vartruexuan\HyperfExcel\Exception\ExcelException;
+use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
-use function Hyperf\Config\config;
+use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class Excel implements ExcelInterface
 {
+    public EventDispatcherInterface $event;
     protected DriverInterface $driver;
     protected array $config;
 
@@ -24,8 +33,8 @@ class Excel implements ExcelInterface
     {
         $config = $container->get(ConfigInterface::class);
         $this->config = $config->get('excel', []);
-
-        $driver = $this->container->get(DriverFactory::class)->get($this->getConfig()['default']);
+        $this->event = $container->get(EventDispatcherInterface::class);
+        $driver = $this->container->get(DriverFactory::class)->get($this->config['default']);
         $this->setDriver($driver);
     }
 
@@ -35,7 +44,22 @@ class Excel implements ExcelInterface
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
-        return $this->getDriver()->export($config);
+
+        $this->event->dispatch(new BeforeExport($config, $this->driver));
+
+        if ($config->getIsAsync()) {
+            if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
+                throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
+            }
+            $this->pushQueue($config);
+            return new ExportData(['token' => $config->getToken()]);
+        }
+
+        $exportData = $this->getDriver()->export($config);
+
+        $this->event->dispatch(new AfterExport($config, $this, $exportData));
+
+        return $exportData;
     }
 
     public function import(ImportConfig $config): ImportData
@@ -44,7 +68,20 @@ class Excel implements ExcelInterface
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
-        return $this->getDriver()->import($config);
+        $this->event->dispatch(new BeforeImport($config, $this->driver));
+        if ($config->getIsAsync()) {
+            if ($config->isReturnSheetData) {
+                throw new ExcelException('Asynchronous does not support returning sheet data');
+            }
+            $this->pushQueue($config);
+            return new ImportData(['token' => $config->getToken()]);
+        }
+
+        $importData = $this->getDriver()->import($config);
+
+        $this->event->dispatch(new AfterImport($config, $this->driver, $importData));
+
+        return $importData;
     }
 
     public function getProgressRecord(string $token): ?ProgressRecord
@@ -94,6 +131,42 @@ class Excel implements ExcelInterface
         $driver = $this->container->get(DriverFactory::class)->get($driverName);
         $this->setDriver($driver);
         return $this;
+    }
+
+    /**
+     * 构建配置
+     *
+     * @param BaseConfig $config
+     * @return BaseConfig
+     */
+    public function formatConfig(BaseConfig $config)
+    {
+        if (empty($config->getToken())) {
+            $config->setToken($this->buildToken());
+        }
+        return $config;
+    }
+
+
+    /**
+     * 推送队列
+     *
+     * @param BaseConfig $config
+     * @return bool
+     */
+    protected function pushQueue(BaseConfig $config): bool
+    {
+        return $this->container->get(ExcelQueueInterface::class)->push($config);
+    }
+
+    /**
+     * token
+     *
+     * @return string
+     */
+    protected function buildToken(): string
+    {
+        return Helper::uuid4();
     }
 
     public function getConfig(): array

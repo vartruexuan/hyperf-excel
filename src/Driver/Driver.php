@@ -42,7 +42,6 @@ use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
-use Vartruexuan\HyperfExcel\Queue\ExcelQueueInterface;
 use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
 use function Hyperf\Support\make;
 use Hyperf\Coroutine\Coroutine;
@@ -61,19 +60,7 @@ abstract class Driver implements DriverInterface
     public function export(ExportConfig $config): ExportData
     {
         try {
-            $config = $this->formatConfig($config);
-
             $exportData = new ExportData(['token' => $config->getToken()]);
-
-            $this->event->dispatch(new BeforeExport($config, $this));
-
-            if ($config->getIsAsync()) {
-                if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
-                    throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
-                }
-                $this->pushQueue($config);
-                return $exportData;
-            }
 
             $path = $this->exportExcel($config);
 
@@ -82,8 +69,6 @@ abstract class Driver implements DriverInterface
             $exportData->response = $this->exportOutPut($config, $path);
 
             $this->event->dispatch(new AfterExportOutput($config, $this));
-
-            $this->event->dispatch(new AfterExport($config, $this, $exportData));
 
             return $exportData;
         } catch (ExcelException $exception) {
@@ -97,21 +82,10 @@ abstract class Driver implements DriverInterface
 
     public function import(ImportConfig $config): importData
     {
-        $config = $this->formatConfig($config);
-
         try {
 
             $importData = new ImportData(['token' => $config->getToken()]);
 
-            $this->event->dispatch(new BeforeImport($config, $this));
-
-            if ($config->getIsAsync()) {
-                if ($config->isReturnSheetData) {
-                    throw new ExcelException('Asynchronous does not support returning sheet data');
-                }
-                $this->pushQueue($config);
-                return $importData;
-            }
             $config->setTempPath($this->fileToTemp($config->getPath()));
 
             $importData->sheetData = $this->importExcel($config);
@@ -119,7 +93,6 @@ abstract class Driver implements DriverInterface
             // 删除临时文件
             Helper::deleteFile($config->getTempPath());
 
-            $this->event->dispatch(new AfterImport($config, $this, $importData));
         } catch (ExcelException $exception) {
 
             $this->event->dispatch(new Error($config, $this, $exception));
@@ -138,7 +111,7 @@ abstract class Driver implements DriverInterface
      * 文件to临时文件
      *
      * @param $path
-     * @return false|string
+     * @return string
      * @throws ExcelException
      */
     protected function fileToTemp($path)
@@ -305,19 +278,7 @@ abstract class Driver implements DriverInterface
         }
     }
 
-    /**
-     * 构建配置
-     *
-     * @param BaseConfig $config
-     * @return BaseConfig
-     */
-    public function formatConfig(BaseConfig $config)
-    {
-        if (empty($config->getToken())) {
-            $config->setToken($this->buildToken());
-        }
-        return $config;
-    }
+
 
     protected function deleteFile($filePath)
     {
@@ -333,26 +294,6 @@ abstract class Driver implements DriverInterface
         }
     }
 
-    /**
-     * 推送队列
-     *
-     * @param BaseConfig $config
-     * @return bool
-     */
-    public function pushQueue(BaseConfig $config): bool
-    {
-        return $this->container->get(ExcelQueueInterface::class)->push($config);
-    }
-
-    /**
-     * token
-     *
-     * @return string
-     */
-    protected function buildToken(): string
-    {
-        return Helper::uuid4();
-    }
 
     /**
      * 构建导出地址
