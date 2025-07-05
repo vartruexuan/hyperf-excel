@@ -54,7 +54,7 @@ class ProgressListener extends BaseListener
 
     function beforeExportExcel(object $event)
     {
-        // TODO: Implement beforeExportExcel() method.
+        $this->progress->getRecord($event->config);
     }
 
     function beforeExportData(object $event)
@@ -147,7 +147,7 @@ class ProgressListener extends BaseListener
 
     function beforeImportExcel(object $event)
     {
-        // TODO: Implement beforeImportExcel() method.
+        $this->progress->getRecord($event->config);
     }
 
     function beforeImportData(object $event)
