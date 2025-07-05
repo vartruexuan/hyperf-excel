@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vartruexuan\HyperfExcel\Job;
+namespace Vartruexuan\HyperfExcel\Queue\AsyncQueue\Job;
 
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;

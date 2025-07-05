@@ -2,7 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Vartruexuan\HyperfExcel\Job;
+namespace Vartruexuan\HyperfExcel\Queue\AsyncQueue\Job;
+
 class ImportJob extends BaseJob
 {
     public function handle()
