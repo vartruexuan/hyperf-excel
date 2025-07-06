@@ -4,14 +4,7 @@ declare(strict_types=1);
 
 namespace Vartruexuan\HyperfExcel\Driver;
 
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\AsyncQueue\Driver\DriverInterface as QueueDriverInterface;
-use Hyperf\Codec\Packer\PhpSerializerPacker;
-use Hyperf\Contract\PackerInterface;
 use Hyperf\Filesystem\FilesystemFactory;
-use Hyperf\Logger\LoggerFactory;
-use Hyperf\Redis\Redis;
-use Hyperf\Redis\RedisFactory;
 use League\Flysystem\Filesystem;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -33,7 +26,6 @@ use Vartruexuan\HyperfExcel\Event\BeforeImportData;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
-use Vartruexuan\HyperfExcel\Job\BaseJob;
 use Vartruexuan\HyperfExcel\Data\Import\Sheet as ImportSheet;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet as ExportSheet;
 use Vartruexuan\HyperfExcel\Strategy\Path\ExportPathStrategyInterface;
@@ -55,7 +47,9 @@ abstract class Driver implements DriverInterface
         try {
             $exportData = new ExportData(['token' => $config->getToken()]);
 
-            $path = $this->exportExcel($config);
+            $filePath = $this->getTempFileName();
+
+            $path = $this->exportExcel($config, $filePath);
 
             $this->event->dispatch(new BeforeExportOutput($config, $this));
 
@@ -190,6 +184,41 @@ abstract class Driver implements DriverInterface
         return $result;
     }
 
+    protected function exportSheetData( callable $writeDataFun,ExportSheet $sheet, ExportConfig $config, array $columns){
+        $totalCount = $sheet->getCount();
+        $pageSize = $sheet->getPageSize();
+        $data = $sheet->getData();
+
+        $isCallback = is_callable($data);
+
+        $page = 1;
+        $pageNum = ceil($totalCount / $pageSize);
+
+        do {
+            $list = $dataCallback = $data;
+
+            if (!$isCallback) {
+                $totalCount = 0;
+                $dataCallback = function () use (&$totalCount, $list) {
+                    return $list;
+                };
+            }
+
+            $list = $this->exportDataCallback($dataCallback, $config, $sheet, $page, min($totalCount, $pageSize), $totalCount);
+
+            $listCount = count($list ?? []);
+
+            if ($list) {
+                $writeDataFun($sheet->formatList($list, $columns));
+            }
+
+            $isEnd = !$isCallback || $totalCount <= 0 || $totalCount <= $pageSize || ($listCount < $pageSize || $pageNum <= $page);
+
+            $page++;
+        } while (!$isEnd);
+
+    }
+
     /**
      * 导入行回调
      *
@@ -308,7 +337,7 @@ abstract class Driver implements DriverInterface
         return $this->config;
     }
 
-    abstract function exportExcel(ExportConfig $config): string;
+    abstract function exportExcel(ExportConfig $config,string $filePath): string;
 
     abstract function importExcel(ImportConfig $config): array|null;
 }

@@ -35,26 +35,23 @@ class XlsWriterDriver extends Driver
      * export
      *
      * @param ExportConfig $config
+     * @param string $filePath
      * @return string
-     * @throws ExcelException
      */
-    public function exportExcel(ExportConfig $config): string
+    public function exportExcel(ExportConfig $config,string $filePath): string
     {
         $excel = new Excel([
-            'path' => $this->getTempDir(),
+            'path' => dirname($filePath),
         ]);
-        $filePath = $this->getTempFileName();
-        $fileName = basename($filePath);
-        $excel->fileName($fileName, ($config->sheets[0])->name ?? 'sheet1');
 
         $this->event->dispatch(new BeforeExportExcel($config, $this));
 
         foreach (array_values($config->getSheets()) as $index => $sheet) {
-            $this->exportSheet($excel, $sheet, $config, $index);
+            $this->exportSheet($excel, $sheet, $config, $index,$filePath);
         }
 
         $excel->output();
-
+        $excel->close();
         $this->event->dispatch(new AfterExportExcel($config, $this));
 
         return $filePath;
@@ -116,64 +113,64 @@ class XlsWriterDriver extends Driver
     }
 
     /**
-     * export sheet
+     * Export sheet
      *
-     * @param Excel $excel
+     * @param mixed $excel Excel实例(类型由子类决定)
      * @param ExportSheet $sheet
      * @param ExportConfig $config
-     * @param int|string $index
+     * @param int $sheetIndex
+     * @param string $filePath
      * @return void
      */
-    protected function exportSheet(Excel $excel, ExportSheet $sheet, ExportConfig $config, int|string $index)
+    protected function exportSheet(Excel $excel, ExportSheet $sheet, ExportConfig $config, int $sheetIndex, string $filePath)
     {
-        if ($index > 0) {
-            $excel->addSheet($sheet->getName());
+        $sheetName = $sheet->getName();
+        if ($sheetIndex > 0) {
+            $excel->addSheet($sheetName);
+        } else {
+            $excel->fileName(basename($filePath), $sheetName);
         }
 
         $this->event->dispatch(new BeforeExportSheet($config, $this, $sheet));
 
         if (!empty($sheet->style)) {
-            $this->setSheetStyle($excel, $sheet->style);
+            $this->exportSheetStyle($excel, $sheet->style);
         }
 
-        [$leafNodes, $fullStructure, $maxDepth] = Column::processColumns($sheet->getColumns());
+        [$columns, $headers, $maxDepth] = Column::processColumns($sheet->getColumns());
 
-        $this->exportSheetHeader($excel, $fullStructure);
-        $excel->setCurrentLine($maxDepth);
+        $this->exportSheetHeader($excel, $headers, $maxDepth);
 
-        $totalCount = $sheet->getCount();
-        $pageSize = $sheet->getPageSize();
-        $data = $sheet->getData();
-
-        $isCallback = is_callable($data);
-
-        $page = 1;
-        $pageNum = ceil($totalCount / $pageSize);
-
-        do {
-            $list = $dataCallback = $data;
-
-            if (!$isCallback) {
-                $totalCount = 0;
-                $dataCallback = function () use (&$totalCount, $list) {
-                    return $list;
-                };
-            }
-
-            $list = $this->exportDataCallback($dataCallback, $config, $sheet, $page, min($totalCount, $pageSize), $totalCount);
-
-            $listCount = count($list ?? []);
-
-            if ($list) {
-                $excel->data($sheet->formatList($list, $leafNodes));
-            }
-
-            $isEnd = !$isCallback || $totalCount <= 0 || $totalCount <= $pageSize || ($listCount < $pageSize || $pageNum <= $page);
-
-            $page++;
-        } while (!$isEnd);
+        $this->exportSheetData(function ($data) use ($excel) {
+            $excel->data($data);
+        }, $sheet, $config, $columns);
 
         $this->event->dispatch(new AfterExportSheet($config, $this, $sheet));
+    }
+
+    /**
+     * 设置页码样式
+     *
+     * @param Excel $excel
+     * @param SheetStyle $style
+     * @return void
+     */
+    public function exportSheetStyle (Excel $excel, SheetStyle $style)
+    {
+        if ($style->gridline > 0) {
+            $excel->gridline($style->gridline);
+        }
+
+        if ($style->zoom !== null) {
+            $excel->zoom($style->zoom);
+        }
+
+        if ($style->hide) {
+            $excel->setCurrentSheetHide();
+        }
+        if ($style->isFirst) {
+            $excel->setCurrentSheetIsFirst();
+        }
     }
 
     /**
@@ -181,9 +178,10 @@ class XlsWriterDriver extends Driver
      *
      * @param Excel $excel
      * @param Column[] $columns
+     * @param int $maxDepth
      * @return void
      */
-    protected function exportSheetHeader(Excel $excel, array $columns)
+    public function exportSheetHeader(Excel $excel, array $columns,int $maxDepth)
     {
         foreach ($columns as $column) {
             // 设置列header
@@ -204,31 +202,7 @@ class XlsWriterDriver extends Driver
             $defaultWidth = 5 * mb_strlen($column->title, 'utf-8');
             $excel->setColumn($range, $column->width > 0 ? $column->width : $defaultWidth, !empty($column->style) ? $this->styleToResource($excel, $column->style) : null);
         }
-    }
-
-    /**
-     * 设置页码样式
-     *
-     * @param Excel $excel
-     * @param SheetStyle $style
-     * @return void
-     */
-    protected function setSheetStyle(Excel $excel, SheetStyle $style)
-    {
-        if ($style->gridline > 0) {
-            $excel->gridline($style->gridline);
-        }
-
-        if ($style->zoom !== null) {
-            $excel->zoom($style->zoom);
-        }
-
-        if ($style->hide) {
-            $excel->setCurrentSheetHide();
-        }
-        if ($style->isFirst) {
-            $excel->setCurrentSheetIsFirst();
-        }
+        $excel->setCurrentLine($maxDepth);
     }
 
     /**
@@ -293,6 +267,7 @@ class XlsWriterDriver extends Driver
      * @param null $header
      * @param int $rowIndex
      * @return void
+     * @throws ExcelException
      */
     protected function rowCallback(ImportConfig $config, ImportSheet $sheet, $row, $header = null, int $rowIndex = 0)
     {

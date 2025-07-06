@@ -88,21 +88,6 @@ class ProgressListener extends BaseListener
         ]));
     }
 
-
-    function afterExport(object $event)
-    {
-        /**
-         * @var AfterExport $event
-         */
-        $record = $this->progress->getRecord($event->config);
-
-        $status = $record->progress->status != ProgressData::PROGRESS_STATUS_FAIL ? ProgressData::PROGRESS_STATUS_COMPLETE : ProgressData::PROGRESS_STATUS_FAIL;
-        $data = $event->data ?: $record->data;
-        $this->progress->setProgress($event->config, new ProgressData([
-            'status' => $status,
-        ]), $data);
-    }
-
     function afterExportData(object $event)
     {
         /**
@@ -116,12 +101,6 @@ class ProgressListener extends BaseListener
         ]));
     }
 
-    function afterExportExcel(object $event)
-    {
-
-        // TODO: Implement afterExportExcel() method.
-    }
-
     function afterExportSheet(object $event)
     {
         /**
@@ -132,9 +111,33 @@ class ProgressListener extends BaseListener
         ]));
     }
 
+    function afterExportExcel(object $event)
+    {
+
+        // TODO: Implement afterExportExcel() method.
+    }
     function afterExportOutput(object $event)
     {
-        // TODO: Implement afterExportOutput() method.
+        /**
+         * @var AfterExport $event
+         */
+        $record = $this->progress->getRecord($event->config);
+        $data = $event->data ?: $record->data;
+        $this->progress->setProgress($event->config, new ProgressData([
+            'status' =>  ProgressData::PROGRESS_STATUS_COMPLETE ,
+        ]), $data);
+    }
+
+    function afterExport(object $event)
+    {
+        /**
+         * @var AfterExport $event
+         */
+        $record = $this->progress->getRecord($event->config);
+        $data = $event->data ?: $record->data;
+        $this->progress->setProgress($event->config, new ProgressData([
+            'status' =>  ProgressData::PROGRESS_STATUS_COMPLETE ,
+        ]), $data);
     }
 
     function beforeImport(object $event)
@@ -150,11 +153,6 @@ class ProgressListener extends BaseListener
         $this->progress->getRecord($event->config);
     }
 
-    function beforeImportData(object $event)
-    {
-        // TODO: Implement beforeImportData() method.
-    }
-
     function beforeImportSheet(object $event)
     {
         /**
@@ -165,17 +163,9 @@ class ProgressListener extends BaseListener
         ]));
     }
 
-    function afterImport(object $event)
+    function beforeImportData(object $event)
     {
-        /**
-         * @var AfterImport $event
-         */
-        $record = $this->progress->getRecord($event->config);
-        $status = $record->progress->status != ProgressData::PROGRESS_STATUS_FAIL ? ProgressData::PROGRESS_STATUS_COMPLETE : ProgressData::PROGRESS_STATUS_FAIL;
-        $data = $event->data ?: $record->data;
-        $this->progress->setProgress($event->config, new ProgressData([
-            'status' => $status,
-        ]), $data);
+        // TODO: Implement beforeImportData() method.
     }
 
     function afterImportData(object $event)
@@ -210,6 +200,18 @@ class ProgressListener extends BaseListener
             'status' => ProgressData::PROGRESS_STATUS_END,
             'total' => $record->sheetListProgress[$event->sheet->name]?->progress,
         ]));
+    }
+
+    function afterImport(object $event)
+    {
+        /**
+         * @var AfterImport $event
+         */
+        $record = $this->progress->getRecord($event->config);
+        $data = $event->data ?: $record->data;
+        $this->progress->setProgress($event->config, new ProgressData([
+            'status' => ProgressData::PROGRESS_STATUS_COMPLETE,
+        ]), $data);
     }
 
     function error(object $event)
