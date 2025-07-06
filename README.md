@@ -45,7 +45,7 @@ php bin/hyperf.php vendor:publish vartruexuan/hyperf-excel
 
 # 使用
 
-- 导出对象
+- excel对象
 
 ```php
 $excel = ApplicationContext::getContainer()->get(\Vartruexuan\HyperfExcel\ExcelInterface::class);
