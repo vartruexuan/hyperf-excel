@@ -15,6 +15,7 @@ use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Psr\Log\LoggerInterface;
 use Hyperf\Logger\LoggerFactory;
+use Vartruexuan\HyperfExcel\Logger\ExcelLoggerInterface;
 
 class CleanFileProcess extends AbstractProcess
 {
@@ -34,7 +35,7 @@ class CleanFileProcess extends AbstractProcess
         $config = $this->container->get(ConfigInterface::class);
         $this->timer = new Timer();
         $this->configs = $config->get('excel', []);
-        $this->logger = $this->container->get(LoggerFactory::class)->get($this->configs['logger']['name'] ?? 'hyperf-excel');
+        $this->logger = $this->container->get(ExcelLoggerInterface::class)->getLogger();
     }
 
     public function isEnable($server): bool
