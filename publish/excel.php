@@ -14,8 +14,9 @@ return [
         'filesystem' => [
             'storage' => 'local', // 默认本地
         ],
+        // 导出配置
         'export' => [
-            'rootDir' => 'export',
+            'rootDir' => 'export', // 导出根目录
         ],
     ],
     // 日志
