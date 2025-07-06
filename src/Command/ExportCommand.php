@@ -24,13 +24,8 @@ class ExportCommand extends AbstractCommand
 
     public function handle()
     {
-        $driver = $this->input->getOption('driver');
         $config = $this->input->getArgument('config');
         $progress = $this->input->getOption('progress');
-
-        if ($driver) {
-            $this->excel->setDriverByName($driver);
-        }
 
         /**
          * @var ExportConfig $config
@@ -53,7 +48,6 @@ class ExportCommand extends AbstractCommand
     {
         $this->setDescription('Run export');
         $this->addArgument('config', InputArgument::REQUIRED, 'The config of export.');
-        $this->addOption('driver', 'd', InputOption::VALUE_OPTIONAL, 'The driver of export.');
         $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress of export.', true);
 
         $this->addUsage('excel:export "App\Excel\DemoExportConfig"');

@@ -26,13 +26,9 @@ class ImportCommand extends AbstractCommand
     public function handle()
     {
         $config = $this->input->getArgument('config');
-        $driver = $this->input->getOption('driver');
         $path = $this->input->getArgument('path');
         $progress = $this->input->getOption('progress');
 
-        if ($driver) {
-            $this->excel->setDriverByName($driver);
-        }
         /**
          * @var ImportConfig $config
          */
@@ -55,8 +51,6 @@ class ImportCommand extends AbstractCommand
     protected function configure()
     {
         $this->setDescription('Run import');
-        $this->addOption('driver', 'd', InputOption::VALUE_REQUIRED, 'The driver of import.', 'xlswriter');
-
         $this->addArgument('config', InputArgument::REQUIRED, 'The config of import.');
         $this->addArgument('path', InputArgument::REQUIRED, 'The file path of import.');
         $this->addOption('progress', 'g', InputOption::VALUE_NEGATABLE, 'The progress path of import.', true);
