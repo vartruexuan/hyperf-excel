@@ -14,23 +14,16 @@ return [
         'filesystem' => [
             'storage' => 'local', // 默认本地
         ],
-        // queue配置
-        'queue' => [
-            'name' => 'default',
-            'jobs' => [
-                'export' => \Vartruexuan\HyperfExcel\Job\ExportJob::class,
-                'import' => \Vartruexuan\HyperfExcel\Job\ImportJob::class,
-            ],
-        ],
         'export' => [
             'rootDir' => 'export',
-            // 导出文件地址构建策略
-            'pathStrategy' => \Vartruexuan\HyperfExcel\Strategy\Path\DateTimeExportPathStrategy::class,
         ],
-
     ],
     'logger' => [
         'name' => 'hyperf-excel',
+    ],
+    // queue配置
+    'queue' => [
+        'name' => 'default',
     ],
     // 进度处理
     'progress' => [
