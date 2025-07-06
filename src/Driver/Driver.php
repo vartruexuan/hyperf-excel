@@ -36,7 +36,7 @@ abstract class Driver implements DriverInterface
     public EventDispatcherInterface $event;
     public Filesystem $filesystem;
 
-    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
+    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name)
     {
         $this->event = $container->get(EventDispatcherInterface::class);
         $this->filesystem = $this->container->get(FilesystemFactory::class)->get($this->config['filesystem']['storage'] ?? 'local');

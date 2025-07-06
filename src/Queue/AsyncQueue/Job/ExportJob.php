@@ -9,7 +9,7 @@ class ExportJob extends BaseJob
 
     public function handle()
     {
-        $this->getDriver()->export($this->config->setIsAsync(false));
+        $this->getExcel()->export($this->config->setIsAsync(false));
     }
 
 }

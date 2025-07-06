@@ -62,7 +62,7 @@ class Excel implements ExcelInterface
 
         $exportData = $this->getDriver()->export($config);
 
-        $this->event->dispatch(new AfterExport($config, $this, $exportData));
+        $this->event->dispatch(new AfterExport($config, $this->driver, $exportData));
 
         return $exportData;
     }

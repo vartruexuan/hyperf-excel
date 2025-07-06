@@ -28,7 +28,7 @@ abstract class BaseJob extends Job
         return ApplicationContext::getContainer();
     }
 
-    protected function getDriver(): ExcelInterface
+    protected function getExcel(): ExcelInterface
     {
         /**
          * @var ExcelInterface $excel
@@ -38,9 +38,8 @@ abstract class BaseJob extends Job
 
     public function fail(\Throwable $e): void
     {
-        $driver = $this->getDriver();
-        //$driver->logger->error('job failed:' . $e->getMessage(), ['exception' => $e]);
-        $driver->event->dispatch(new Error($this->config, $driver, $e));
+        $driver = $this->getExcel();
+        $driver->event->dispatch(new Error($this->config, $this->getExcel()->getDriver(), $e));
     }
 
     abstract function handle();

@@ -26,7 +26,7 @@ use Vtiful\Kernel\Excel;
 
 class XlsWriterDriver extends Driver
 {
-    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name = 'xlswriter')
+    public function __construct(protected ContainerInterface $container, protected array $config, protected string $name)
     {
         parent::__construct($container, $config, $name);
     }
@@ -38,7 +38,7 @@ class XlsWriterDriver extends Driver
      * @param string $filePath
      * @return string
      */
-    public function exportExcel(ExportConfig $config,string $filePath): string
+    public function exportExcel(ExportConfig $config, string $filePath): string
     {
         $excel = new Excel([
             'path' => dirname($filePath),
@@ -47,7 +47,7 @@ class XlsWriterDriver extends Driver
         $this->event->dispatch(new BeforeExportExcel($config, $this));
 
         foreach (array_values($config->getSheets()) as $index => $sheet) {
-            $this->exportSheet($excel, $sheet, $config, $index,$filePath);
+            $this->exportSheet($excel, $sheet, $config, $index, $filePath);
         }
 
         $excel->output();
@@ -155,9 +155,9 @@ class XlsWriterDriver extends Driver
      * @param SheetStyle $style
      * @return void
      */
-    public function exportSheetStyle (Excel $excel, SheetStyle $style)
+    public function exportSheetStyle(Excel $excel, SheetStyle $style)
     {
-        if ($style->gridline > 0) {
+        if ($style->gridline !== null) {
             $excel->gridline($style->gridline);
         }
 
@@ -181,7 +181,7 @@ class XlsWriterDriver extends Driver
      * @param int $maxDepth
      * @return void
      */
-    public function exportSheetHeader(Excel $excel, array $columns,int $maxDepth)
+    public function exportSheetHeader(Excel $excel, array $columns, int $maxDepth)
     {
         foreach ($columns as $column) {
             // 设置列header

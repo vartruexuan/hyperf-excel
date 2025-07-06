@@ -8,6 +8,6 @@ class ImportJob extends BaseJob
 {
     public function handle()
     {
-        $this->getDriver()->import($this->config->setIsAsync(false));
+        $this->getExcel()->import($this->config->setIsAsync(false));
     }
 }
