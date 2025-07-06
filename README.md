@@ -1,49 +1,50 @@
 # hyperf-excel
 
-[![php](https://img.shields.io/badge/php-%3E=8.2-brightgreen.svg?maxAge=2592000)](https://github.com/php/php-src)
+[![php](https://img.shields.io/badge/php-%3E=8.1-brightgreen.svg?maxAge=2592000)](https://github.com/php/php-src)
 [![Latest Stable Version](https://img.shields.io/packagist/v/vartruexuan/hyperf-excel)](https://packagist.org/packages/vartruexuan/hyperf-excel)
 [![License](https://img.shields.io/packagist/l/vartruexuan/hyperf-excel)](https://github.com/vartruexuan/hyperf-excel)
 
-# 概述
+## 📌 概述
 
-excel 同步|异步智能配置导入导出
+Excel 同步/异步智能配置导入导出组件，为 Hyperf 框架提供强大的 Excel 处理能力。
 
-## 组件能力
+## ✨ 组件能力
 
-- [x] 支持异步导入导出
-- [x] 复杂表头(`无限极`|`跨行`|`跨列`)
-- [x] 样式配置(`页码样式`|`表头样式`|`列样式`)
-- [x] 进度信息
-- [x] 消息构建查询
-- [x] 格式 `xlsx`
-- [x] 支持驱动 `xlswriter`
+- ✅ **异步处理** - 支持异步导入导出
+- ✅ **复杂表头** - 支持`无限极`、`跨行`、`跨列`的复杂表头设计
+- ✅ **样式定制** - 可配置`页码样式`、`表头样式`、`列样式`
+- ✅ **进度追踪** - 实时获取处理进度信息
+- ✅ **消息系统** - 支持构建查询消息
+- ✅ **格式支持** - 支持 `xlsx` 格式
+- ✅ **驱动支持** - 支持 `xlswriter` 驱动
 
-# 安装
+## 🚀 安装
 
-- 安装依赖拓展 [xlswriter](https://xlswriter-docs.viest.me/zh-cn/an-zhuang)
+### 前置准备
+
+安装依赖拓展 [xlswriter](https://xlswriter-docs.viest.me/zh-cn/an-zhuang)
 
 ```bash
 pecl install xlswriter
 ```
-
 - 依赖组件包 <项目中安装,构建配置>
     - [hyperf/filesystem](https://hyperf.wiki/3.1/#/zh-cn/filesystem?id=%e5%ae%89%e8%a3%85)
     - [hyperf/async-queue](https://hyperf.wiki/3.1/#/zh-cn/async-queue?id=%e5%bc%82%e6%ad%a5%e9%98%9f%e5%88%97)
     - [hyperf/logger](https://hyperf.wiki/3.1/#/zh-cn/logger?id=%e6%97%a5%e5%bf%97)
     - [hyperf/redis](https://hyperf.wiki/3.1/#/zh-cn/redis?id=redis)
-- 安装组件
+### 安装组件
 
 ```shell
 composer require vartruexuan/hyperf-excel
 ```
 
-- 构建配置
+### 构建配置
 
 ```shell
 php bin/hyperf.php vendor:publish vartruexuan/hyperf-excel
 ```
 
-# 使用
+## 🛠 使用指南
 
 - excel对象
 
@@ -94,9 +95,9 @@ $isEnd = false; // 是否结束
 $progressRecord = $excel->popMessageAndIsEnd($token, 50, $isEnd);
 ```
 
-# config类配置
+## ⚙️配置类配置
 
-## 导出
+### 导出
 
 - config
 
@@ -110,26 +111,21 @@ use Vartruexuan\HyperfExcel\Data\Export\ExportConfig;
 use Vartruexuan\HyperfExcel\Data\Export\Column;
 use Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam;
 use Vartruexuan\HyperfExcel\Data\Export\Sheet;
-use Vartruexuan\HyperfExcel\Data\Export\SheetStyle;use function Hyperf\Support\make;
+use Vartruexuan\HyperfExcel\Data\Export\SheetStyle;
 
 class DemoExportConfig extends ExportConfig
 {
     public string $serviceName = 'demo';
 
-    /**
-      *  输出类型
-      *      OUT_PUT_TYPE_UPLOAD 导出=>上传<filesystem>
-      *      OUT_PUT_TYPE_OUT    直接同步输出 <isAsync=false>    
-      * @var string 
-      */
-    public string $outPutType = self::OUT_PUT_TYPE_UPLOAD;
-    /**
-     * 是否异步
-     *   true 则会推入队列之中  
-     * @var bool
-     */
+    // 是否异步
     public bool $isAsync = true;
 
+    // 输出类型  
+    // OUT_PUT_TYPE_UPLOAD  导出并上传
+    // OUT_PUT_TYPE_OUT     直接同步输出
+    public string $outPutType = self::OUT_PUT_TYPE_UPLOAD;
+
+    // 页码配置
     public function getSheets(): array
     {
         $this->setSheets([
@@ -184,7 +180,6 @@ class DemoExportConfig extends ExportConfig
       // $exportCallbackParam->pageSize;// 页码数量
       
       msleep(500);
-      
       var_dump($this->params);
       // 测试数据 <实际业务可能是查询数据库>
       for ($i = 0; $i < $exportCallbackParam->pageSize; $i++) {
@@ -198,7 +193,6 @@ class DemoExportConfig extends ExportConfig
       // 输出信息
       $progress= ApplicationContext::getContainer()->get(ProgressInterface::class);
       $progress->pushMessage($this->token,"页码:".$exportCallbackParam->page .",数量：". $exportCallbackParam->pageSize);
-      
       return $d ?? [];
     }
 }
@@ -218,7 +212,9 @@ class DemoExportConfig extends ExportConfig
       // 数据数量
       'count' => 0, 
       // 数据(array|callback)
-      'data' => [], 
+      'data' => function(\Vartruexuan\HyperfExcel\Data\Export\ExportCallbackParam $callbackParam){
+            return [];
+      }, 
       // 分批导出数
       'pageSize' => 1, 
       // 页码样式
@@ -288,7 +284,7 @@ new Style([
 ])
 ```
 
-#### 导入
+### 导入
 
 - config
 
@@ -308,11 +304,7 @@ class DemoImportConfig extends AbstractImportConfig
 {
     public string $serviceName = 'demo';
 
-    /**
-     * 是否异步 <默认异步队列>
-     *
-     * @var bool
-     */
+    // 是否异步 <默认 async-queue>
     public bool $isAsync = true;
     
     public function getSheets(): array
@@ -379,7 +371,7 @@ new Sheet([
           ]),
     ],
     // 数据回调
-    'callback' => [$this, 'rowCallback']
+    'callback' => function(\Vartruexuan\HyperfExcel\Data\Import\ImportRowCallbackParam $callbackParam){}
 ])
 
 ```
@@ -397,7 +389,7 @@ new Column([
 ]),
 ```
 
-# 配置
+## 配置
 
 ```php
 <?php
@@ -449,7 +441,7 @@ return [
 ];
 ```
 
-# 命令行
+## 命令行
 
 - 导出
 
@@ -478,7 +470,7 @@ php bin/hyperf.php  excel:progress  424ee1bd6db248e09b514231edea5f04
 php bin/hyperf.php  excel:message  424ee1bd6db248e09b514231edea5f04
 ```
 
-# DI
+## DI
 
 - token 生成策略 <默认uuid4>
 
@@ -503,9 +495,9 @@ php bin/hyperf.php  excel:message  424ee1bd6db248e09b514231edea5f04
 ]
 ```
 
-# 监听器
+## 监听器
 
-## 日志监听器
+### 日志监听器
 
 ```php
 // config/autoload/listeners.php
@@ -514,7 +506,7 @@ return [
 ];
 ```
 
-## db日志监听器
+### db日志监听器
 
 ```php
 // config/autoload/listeners.php
@@ -556,7 +548,7 @@ CREATE TABLE `excel_log`
 
 ```
 
-## 自定义监听器
+### 自定义监听器
 
 - 继承`Vartruexuan\HyperfExcel\Listener\BaseListener`
 

@@ -9,7 +9,7 @@
         "export",
         "import"
     ],
-    "description": "hyperf框架excel同步|异步导入导出,支持无限极列头配置,页码、列头、列样式配置。",
+    "description": "Excel 同步/异步智能配置导入导出组件，为 Hyperf 框架提供强大的 Excel 处理能力,支持无限极列头配置,页码、列头、列样式配置。",
     "autoload": {
         "psr-4": {
             "Vartruexuan\\HyperfExcel\\": "src/"
