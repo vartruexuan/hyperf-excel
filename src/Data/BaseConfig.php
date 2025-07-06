@@ -17,7 +17,7 @@ abstract class BaseConfig extends BaseObject
      * 驱动(未指定默认驱动)
      * @var string
      */
-    public string $driver = '';
+    public string $driverName = '';
 
     /**
      * 是否异步
@@ -91,9 +91,15 @@ abstract class BaseConfig extends BaseObject
         return $this->isDbLog;
     }
 
-    public function getDriver(): string
+    public function getDriverName(): string
     {
-        return $this->driver;
+        return $this->driverName;
+    }
+
+    public function setDriverName(string $driverName): static
+    {
+        $this->driverName = $driverName;
+        return $this;
     }
 
     /**

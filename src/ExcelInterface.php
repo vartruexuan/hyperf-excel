@@ -25,11 +25,11 @@ interface ExcelInterface
 
     public function pushMessage(string $token, string $message);
 
-    public function getDriver(): DriverInterface;
+    public function getDefaultDriver(): DriverInterface;
 
-    public function setDriver(DriverInterface $driver): static;
+    public function getDriverByName(string $driverName): DriverInterface;
 
-    public function setDriverByName(string $driverName): static;
+    public function getDriver(?string $driverName = null): DriverInterface;
 
     public function getConfig(): array;
 

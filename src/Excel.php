@@ -17,7 +17,6 @@ use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
 use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
-use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
 use Vartruexuan\HyperfExcel\Progress\ProgressInterface;
 use Vartruexuan\HyperfExcel\Progress\ProgressRecord;
@@ -28,7 +27,6 @@ use Vartruexuan\HyperfExcel\Strategy\Token\TokenStrategyInterface;
 class Excel implements ExcelInterface
 {
     public EventDispatcherInterface $event;
-    protected DriverInterface $driver;
     protected array $config;
 
     public function __construct(protected ContainerInterface $container, protected ProgressInterface $progress)
@@ -36,8 +34,6 @@ class Excel implements ExcelInterface
         $config = $container->get(ConfigInterface::class);
         $this->config = $config->get('excel', []);
         $this->event = $container->get(EventDispatcherInterface::class);
-        $driver = $this->container->get(DriverFactory::class)->get($this->config['default']);
-        $this->setDriver($driver);
     }
 
     public function export(ExportConfig $config): ExportData
@@ -45,33 +41,32 @@ class Excel implements ExcelInterface
         if (empty($config->getToken())) {
             $config->setToken($this->buildToken());
         }
-        $driver = $config->getDriver();
-        if (!empty($driver)) {
-            $this->setDriverByName($driver);
-        }
+        $driver = $this->getDriver($config->getDriverName());
+        $exportData = new ExportData(['token' => $config->getToken()]);
 
         try {
-            $this->event->dispatch(new BeforeExport($config, $this->getDriver()));
+
+            $this->event->dispatch(new BeforeExport($config, $driver));
 
             if ($config->getIsAsync()) {
                 if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
                     throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
                 }
                 $this->pushQueue($config);
-                return new ExportData(['token' => $config->getToken()]);
+                return $exportData;
             }
 
-            $exportData = $this->getDriver()->export($config);
+            $exportData = $driver->export($config);
 
-            $this->event->dispatch(new AfterExport($config, $this->getDriver(), $exportData));
+            $this->event->dispatch(new AfterExport($config, $driver, $exportData));
 
             return $exportData;
 
         } catch (ExcelException $exception) {
-            $this->event->dispatch(new Error($config, $this->getDriver(), $exception));
+            $this->event->dispatch(new Error($config, $driver, $exception));
             throw $exception;
         } catch (\Throwable $throwable) {
-            $this->event->dispatch(new Error($config, $this->getDriver(), $throwable));
+            $this->event->dispatch(new Error($config, $driver, $throwable));
             throw $throwable;
         }
     }
@@ -81,32 +76,30 @@ class Excel implements ExcelInterface
         if (empty($config->getToken())) {
             $config->setToken($this->buildToken());
         }
-        $driver = $config->getDriver();
-        if (!empty($driver)) {
-            $this->setDriverByName($driver);
-        }
+        $importData = new ImportData(['token' => $config->getToken()]);
+        $driver = $this->getDriver($config->getDriverName());
 
         try {
-            $this->event->dispatch(new BeforeImport($config, $this->getDriver()));
+            $this->event->dispatch(new BeforeImport($config, $driver));
             if ($config->getIsAsync()) {
                 if ($config->isReturnSheetData) {
                     throw new ExcelException('Asynchronous does not support returning sheet data');
                 }
                 $this->pushQueue($config);
-                return new ImportData(['token' => $config->getToken()]);
+                return $importData;
             }
 
-            $importData = $this->getDriver()->import($config);
+            $importData = $driver->import($config);
 
-            $this->event->dispatch(new AfterImport($config, $this->getDriver(), $importData));
+            $this->event->dispatch(new AfterImport($config, $driver, $importData));
 
             return $importData;
 
         } catch (ExcelException $exception) {
-            $this->event->dispatch(new Error($config, $this->getDriver(), $exception));
+            $this->event->dispatch(new Error($config, $driver, $exception));
             throw $exception;
         } catch (\Throwable $throwable) {
-            $this->event->dispatch(new Error($config, $this->getDriver(), $throwable));
+            $this->event->dispatch(new Error($config, $driver, $throwable));
             throw $throwable;
         }
     }
@@ -142,22 +135,23 @@ class Excel implements ExcelInterface
             ]);
     }
 
-    public function getDriver(): DriverInterface
+    public function getDefaultDriver(): DriverInterface
     {
-        return $this->driver;
+        return $this->container->get(DriverInterface::class);
     }
 
-    public function setDriver(DriverInterface $driver): static
+    public function getDriverByName(string $driverName): DriverInterface
     {
-        $this->driver = $driver;
-        return $this;
+        return $this->container->get(DriverFactory::class)->get($driverName);
     }
 
-    public function setDriverByName(string $driverName): static
+    public function getDriver(?string $driverName = null): DriverInterface
     {
-        $driver = $this->container->get(DriverFactory::class)->get($driverName);
-        $this->setDriver($driver);
-        return $this;
+        $driver = $this->getDefaultDriver();
+        if (!empty($driverName)) {
+            $driver = $this->getDriverByName($driverName);
+        }
+        return $driver;
     }
 
     /**
