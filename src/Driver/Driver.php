@@ -55,7 +55,7 @@ abstract class Driver implements DriverInterface
 
             $exportData->response = $this->exportOutPut($config, $path);
 
-            $this->event->dispatch(new AfterExportOutput($config, $this));
+            $this->event->dispatch(new AfterExportOutput($config, $this, $exportData));
 
             return $exportData;
         } catch (ExcelException $exception) {
@@ -184,7 +184,8 @@ abstract class Driver implements DriverInterface
         return $result;
     }
 
-    protected function exportSheetData( callable $writeDataFun,ExportSheet $sheet, ExportConfig $config, array $columns){
+    protected function exportSheetData(callable $writeDataFun, ExportSheet $sheet, ExportConfig $config, array $columns)
+    {
         $totalCount = $sheet->getCount();
         $pageSize = $sheet->getPageSize();
         $data = $sheet->getData();
@@ -337,7 +338,7 @@ abstract class Driver implements DriverInterface
         return $this->config;
     }
 
-    abstract function exportExcel(ExportConfig $config,string $filePath): string;
+    abstract function exportExcel(ExportConfig $config, string $filePath): string;
 
     abstract function importExcel(ImportConfig $config): array|null;
 }
