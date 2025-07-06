@@ -9,7 +9,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Vartruexuan\HyperfExcel\Data\Import\ImportConfig;
 use Vartruexuan\HyperfExcel\Driver\Driver;
-use Vartruexuan\HyperfExcel\Driver\DriverFactory;
 use Vartruexuan\HyperfExcel\ExcelInterface;
 
 class ImportCommand extends AbstractCommand
@@ -31,10 +30,6 @@ class ImportCommand extends AbstractCommand
         $path = $this->input->getArgument('path');
         $progress = $this->input->getOption('progress');
 
-        $factory = $this->container->get(DriverFactory::class);
-        /**
-         * @var Driver
-         */
         if ($driver) {
             $this->excel->setDriverByName($driver);
         }

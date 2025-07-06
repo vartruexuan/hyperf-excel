@@ -57,7 +57,10 @@ $excel = ApplicationContext::getContainer()->get(\Vartruexuan\HyperfExcel\ExcelI
 /**
  * @var \Vartruexuan\HyperfExcel\ExcelInterface $excel 
  */
-$exportData = $excel->export(new DemoExportConfig());
+$exportData = $excel->export(new DemoExportConfig([
+    // 额外参数
+    'params'=> $request->all(),
+]));
 ```
 
 - 导入
@@ -65,8 +68,9 @@ $exportData = $excel->export(new DemoExportConfig());
 ```php
 /**
  * @var \Vartruexuan\HyperfExcel\ExcelInterface $excel 
+ * @
  */
-$exportData = $excel->import(new DemoImportConfig());
+$exportData = $excel->import(new DemoImportConfig()->setPath('/d/xxx.xlsx'));
 ```
 
 - 获取进度
@@ -180,6 +184,8 @@ class DemoExportConfig extends ExportConfig
       // $exportCallbackParam->pageSize;// 页码数量
       
       msleep(500);
+      
+      var_dump($this->params);
       // 测试数据 <实际业务可能是查询数据库>
       for ($i = 0; $i < $exportCallbackParam->pageSize; $i++) {
           $d[] = [
