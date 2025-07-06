@@ -15,6 +15,7 @@ use Vartruexuan\HyperfExcel\Event\AfterExport;
 use Vartruexuan\HyperfExcel\Event\AfterImport;
 use Vartruexuan\HyperfExcel\Event\BeforeExport;
 use Vartruexuan\HyperfExcel\Event\BeforeImport;
+use Vartruexuan\HyperfExcel\Event\Error;
 use Vartruexuan\HyperfExcel\Exception\ExcelException;
 use Vartruexuan\HyperfExcel\Helper\Helper;
 use Vartruexuan\HyperfExcel\Progress\ProgressData;
@@ -44,27 +45,35 @@ class Excel implements ExcelInterface
         if (empty($config->getToken())) {
             $config->setToken($this->buildToken());
         }
-
         $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
 
-        $this->event->dispatch(new BeforeExport($config, $this->driver));
+        try {
+            $this->event->dispatch(new BeforeExport($config, $this->getDriver()));
 
-        if ($config->getIsAsync()) {
-            if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
-                throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
+            if ($config->getIsAsync()) {
+                if ($config->getOutPutType() == ExportConfig::OUT_PUT_TYPE_OUT) {
+                    throw new ExcelException('Async does not support output type ExportConfig::OUT_PUT_TYPE_OUT');
+                }
+                $this->pushQueue($config);
+                return new ExportData(['token' => $config->getToken()]);
             }
-            $this->pushQueue($config);
-            return new ExportData(['token' => $config->getToken()]);
+
+            $exportData = $this->getDriver()->export($config);
+
+            $this->event->dispatch(new AfterExport($config, $this->getDriver(), $exportData));
+
+            return $exportData;
+
+        } catch (ExcelException $exception) {
+            $this->event->dispatch(new Error($config, $this->getDriver(), $exception));
+            throw $exception;
+        } catch (\Throwable $throwable) {
+            $this->event->dispatch(new Error($config, $this->getDriver(), $throwable));
+            throw $throwable;
         }
-
-        $exportData = $this->getDriver()->export($config);
-
-        $this->event->dispatch(new AfterExport($config, $this->driver, $exportData));
-
-        return $exportData;
     }
 
     public function import(ImportConfig $config): ImportData
@@ -72,25 +81,34 @@ class Excel implements ExcelInterface
         if (empty($config->getToken())) {
             $config->setToken($this->buildToken());
         }
-
         $driver = $config->getDriver();
         if (!empty($driver)) {
             $this->setDriverByName($driver);
         }
-        $this->event->dispatch(new BeforeImport($config, $this->driver));
-        if ($config->getIsAsync()) {
-            if ($config->isReturnSheetData) {
-                throw new ExcelException('Asynchronous does not support returning sheet data');
+
+        try {
+            $this->event->dispatch(new BeforeImport($config, $this->getDriver()));
+            if ($config->getIsAsync()) {
+                if ($config->isReturnSheetData) {
+                    throw new ExcelException('Asynchronous does not support returning sheet data');
+                }
+                $this->pushQueue($config);
+                return new ImportData(['token' => $config->getToken()]);
             }
-            $this->pushQueue($config);
-            return new ImportData(['token' => $config->getToken()]);
+
+            $importData = $this->getDriver()->import($config);
+
+            $this->event->dispatch(new AfterImport($config, $this->getDriver(), $importData));
+
+            return $importData;
+
+        } catch (ExcelException $exception) {
+            $this->event->dispatch(new Error($config, $this->getDriver(), $exception));
+            throw $exception;
+        } catch (\Throwable $throwable) {
+            $this->event->dispatch(new Error($config, $this->getDriver(), $throwable));
+            throw $throwable;
         }
-
-        $importData = $this->getDriver()->import($config);
-
-        $this->event->dispatch(new AfterImport($config, $this->driver, $importData));
-
-        return $importData;
     }
 
     public function getProgressRecord(string $token): ?ProgressRecord
