@@ -1,5 +1,26 @@
 # hyperf-excel
 
+> ## ⚠️ 维护说明
+>
+> **本仓库当前仅维护问题修复，不再迭代新功能。** 大版本已迁移至新仓库 [businessg/hyperf-excel](https://github.com/businessg/hyperf-excel)，建议新项目直接使用新包。
+>
+> ### 迁移到新仓库指南
+>
+> 1. **替换 Composer 依赖**
+>
+>    ```bash
+>    composer remove vartruexuan/hyperf-excel
+>    composer require businessg/hyperf-excel
+>    ```
+>
+> 2. **重新发布配置**
+>
+>    ```bash
+>    php bin/hyperf.php vendor:publish businessg/hyperf-excel
+>    ```
+>
+> 3. **代码层面调整** 请参考新包 [businessg/hyperf-excel](https://github.com/businessg/hyperf-excel) 文档中的「从 vartruexuan/hyperf-excel 迁移」章节。
+
 [![php](https://img.shields.io/badge/php-%3E=8.1-brightgreen.svg?maxAge=2592000)](https://github.com/php/php-src)
 [![Latest Stable Version](https://img.shields.io/packagist/v/vartruexuan/hyperf-excel)](https://packagist.org/packages/vartruexuan/hyperf-excel)
 [![License](https://img.shields.io/packagist/l/vartruexuan/hyperf-excel)](https://github.com/vartruexuan/hyperf-excel)
